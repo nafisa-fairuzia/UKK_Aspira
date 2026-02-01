@@ -1,0 +1,221 @@
+:root {
+    --gradient: linear-gradient(160deg, #0ea5e9 20%, #2563eb 100%);
+}
+
+.welcome-card {
+    background: var(--gradient);
+    min-height: 300px;
+}
+
+.decoration-circle-1 {
+    position: absolute;
+    width: 300px;
+    height: 300px;
+    background: white;
+    opacity: 10%;
+    border-radius: 50%;
+    top: -100px;
+    right: -50px;
+}
+
+.decoration-circle-2 {
+    position: absolute;
+    width: 150px;
+    height: 150px;
+    background: white;
+    opacity: 10%;
+    border-radius: 50%;
+    bottom: -50px;
+    left: 20%;
+}
+
+.welcome-img {
+    position: absolute;
+    right: 20px;
+    bottom: 0;
+    width: 300px;
+    z-index: 1;
+    filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.1));
+}
+
+.stat-hover {
+    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+}
+.stat-hover:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08) !important;
+}
+
+.timeline {
+    position: relative;
+}
+.timeline-status {
+    position: relative;
+    width: 20px;
+}
+.timeline-status .dot {
+    width: 14px;
+    height: 14px;
+    border-radius: 50%;
+    position: relative;
+    z-index: 2;
+    margin-top: 5px;
+}
+.timeline-status .line {
+    position: absolute;
+    width: 2px;
+    height: 100%;
+    background: #e2e8f0;
+    left: 50%;
+    transform: translateX(-50%);
+    top: 5px;
+    z-index: 1;
+}
+.timeline-item:last-child .line {
+    display: none;
+}
+
+.bg-primary-subtle {
+    background: rgba(99, 102, 241, 0.1);
+}
+.bg-warning-subtle {
+    background: rgba(245, 158, 11, 0.1);
+}
+.bg-info-subtle {
+    background: rgba(14, 165, 233, 0.1);
+}
+.bg-success-subtle {
+    background: rgba(16, 185, 129, 0.1);
+}
+
+.siswa-dashboard #main-content {
+    width: calc(100% - var(--sidebar-w, 200px));
+    transition: all 0.4s ease;
+}
+
+@media (min-width: 992px) {
+    #sidebar.collapsed ~ .siswa-dashboard #main-content {
+        width: calc(100% - var(--sidebar-m, 80px));
+        margin-left: var(--sidebar-m, 80px);
+    }
+}
+
+@media (max-width: 991px) {
+    .siswa-dashboard #main-content {
+        width: 100% !important;
+    }
+}
+
+@media (max-width: 450px) {
+    body {
+        font-size: 13px;
+    }
+
+    #main-content {
+        padding: 18px 12px;
+    }
+
+    .container-l,
+    .container-fluid {
+        padding: 0 8px;
+    }
+
+    .card {
+        border-radius: 12px;
+        margin-bottom: 12px;
+    }
+
+    .card-header {
+        padding: 12px !important;
+    }
+
+    .card-body {
+        padding: 12px !important;
+    }
+
+    .btn {
+        padding: 8px 12px;
+        font-size: 12px;
+    }
+
+    .btn-sm {
+        padding: 6px 10px;
+        font-size: 11px;
+    }
+
+    .form-control,
+    .form-select {
+        font-size: 13px;
+        padding: 8px 10px;
+        height: auto;
+    }
+
+    .modal-body {
+        padding: 12px !important;
+    }
+
+    .row {
+        margin-right: -6px;
+        margin-left: -6px;
+    }
+
+    .col,
+    [class*="col-"] {
+        padding-right: 6px;
+        padding-left: 6px;
+    }
+
+    h1 {
+        font-size: 18px;
+    }
+    h2 {
+        font-size: 16px;
+    }
+    h3 {
+        font-size: 14px;
+    }
+    h4 {
+        font-size: 13px;
+    }
+    h5 {
+        font-size: 12px;
+    }
+    h6 {
+        font-size: 11px;
+    }
+    .sidebar-overlay {
+        display: block !important;
+    }
+
+    #header {
+        width: 100%;
+        left: 0 !important;
+    }
+
+    #main-content {
+        margin-left: 0 !important;
+        width: 100% !important;
+    }
+}
+
+@media (max-width: 380px) {
+    .btn {
+        padding: 6px 10px;
+        font-size: 11px;
+    }
+
+    #header {
+        padding: 8px 10px;
+    }
+
+    .card-header {
+        padding: 10px !important;
+    }
+
+    h4 {
+        font-size: 12px;
+    }
+    h5 {
+        font-size: 11px;
+    }
+}

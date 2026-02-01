@@ -1,0 +1,110 @@
+.siswa-riwayat .x-small {
+    font-size: 0.7rem;
+}
+
+.siswa-riwayat .card-hover {
+    transition:
+        transform 0.2s ease,
+        box-shadow 0.2s ease;
+    border: 1px solid transparent !important;
+}
+
+.siswa-riwayat .card-hover:hover {
+    transform: translateY(-5px);
+    box-shadow: 0 10px 20px rgba(0, 0, 0, 0.05) !important;
+    border-color: #eee !important;
+}
+
+.siswa-riwayat .bg-success-subtle {
+    background-color: #d1e7dd !important;
+}
+
+.siswa-riwayat .bg-primary-subtle {
+    background-color: #cfe2ff !important;
+}
+
+.siswa-riwayat .bg-warning-subtle {
+    background-color: #fff3cd !important;
+}
+
+.siswa-riwayat .btn-white {
+    background: #fff;
+    color: #333;
+}
+
+.siswa-riwayat .status-circle {
+    width: 42px;
+    height: 42px;
+    min-width: 42px;
+    color: white;
+    transition: all 0.3s ease;
+}
+
+.siswa-riwayat .bg-menunggu {
+    background-color: #f1c40f !important;
+}
+.siswa-riwayat .bg-proses {
+    background-color: #3498db !important;
+}
+.siswa-riwayat .bg-selesai {
+    background-color: #2ecc71 !important;
+}
+
+.siswa-riwayat .card-hover:hover {
+    transform: translateY(-5px);
+    transition: all 0.3s ease;
+}
+
+.siswa-riwayat .text-x-small {
+    font-size: 0.65rem;
+    letter-spacing: 0.5px;
+}
+
+.siswa-riwayat .status-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.siswa-riwayat .status-badge {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    font-size: 1.2rem;
+    color: white;
+    font-weight: 600;
+}
+
+
+.siswa-riwayat .status-menunggu {
+    background-color: #fffbeb; 
+    color: #d97706;         
+    border: 1.5px solid #fcd34d; 
+    font-weight: 600;
+}
+
+.siswa-riwayat .status-selesai {
+    background-color: #ecfdf5; 
+    color: #059669;    
+    border: 1.5px solid #6ee7b7;
+    font-weight: 600;
+}
+
+.siswa-riwayat .status-proses {
+    background-color: #f0f9ff; 
+    color: #0284c7;    
+    border: 1.5px solid #7dd3fc;
+    font-weight: 600;
+}
+
+@keyframes spin {
+    from {
+        transform: rotate(0deg);
+    }
+    to {
+        transform: rotate(360deg);
+    }
+}
