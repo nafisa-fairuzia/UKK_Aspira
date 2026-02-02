@@ -7,7 +7,6 @@
 @endpush
 
 @section('content')
-
 <div class="admin-list">
     <main id="main-content" class="py-4 bg-light min-vh-100">
         <div class="container-l overflow-hidden">
