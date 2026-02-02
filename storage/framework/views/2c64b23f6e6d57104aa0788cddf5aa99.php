@@ -45,7 +45,6 @@ $baseUrl = ($role == 'admin') ? '/admin' : '/siswa';
         font-size: 9px;
     }
 
-    /* CSS UNTUK TITIK BIRU NOTIF BARU */
     .unread-dot {
         width: 8px;
         height: 8px;
