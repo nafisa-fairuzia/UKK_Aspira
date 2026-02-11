@@ -5,44 +5,55 @@ namespace App\Http\Controllers\Siswa;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\InputAspirasi;
+use App\Models\Aspirasi;
 use App\Models\Siswa;
 use App\Models\Notifikasi;
-use Illuminate\Support\Facades\Session;
 use Illuminate\Support\Facades\Storage;
 
 class DashboardSiswaController extends Controller
 {
+
     public function index()
     {
-        $nis = Session::get('nis');
+        $nis = session('nis');
 
         $siswa = Siswa::where('nis', $nis)->first();
         if ($siswa && $siswa->profile_pic) {
-            Session::put('siswa_profile_pic', $siswa->profile_pic);
+            session(['siswa_profile_pic' => $siswa->profile_pic]);
         }
 
         $total = InputAspirasi::where('nis', $nis)->count();
 
         $menunggu = InputAspirasi::where('nis', $nis)
-            ->whereNull('status')
-            ->orWhere('status', 'Menunggu')
+            ->whereDoesntHave('aspirasi')
             ->count();
 
         $proses = InputAspirasi::where('nis', $nis)
-            ->where('status', 'Proses')
+            ->whereHas('aspirasi', function ($q) {
+                $q->where('status', 'Proses');
+            })
             ->count();
 
         $selesai = InputAspirasi::where('nis', $nis)
-            ->where('status', 'Selesai')
+            ->whereHas('aspirasi', function ($q) {
+                $q->where('status', 'Selesai');
+            })
             ->count();
 
         $terakhir = InputAspirasi::where('nis', $nis)
             ->latest()
             ->first();
 
-        $riwayat = InputAspirasi::where('nis', $nis)
-            ->with('kategori')
-            ->latest()
+        $riwayat = InputAspirasi::where('input_aspirasi.nis', $nis)
+            ->with(['kategori', 'aspirasi'])
+            ->leftJoin('aspirasi', 'input_aspirasi.id_pelaporan', '=', 'aspirasi.id_input_aspirasi')
+            ->select('input_aspirasi.*')
+            ->orderByRaw("CASE
+                WHEN aspirasi.status = 'Proses' THEN 2
+                WHEN aspirasi.status = 'Selesai' THEN 3
+                ELSE 1
+            END")
+            ->latest('input_aspirasi.created_at')
             ->take(5)
             ->get();
 
@@ -65,7 +76,7 @@ class DashboardSiswaController extends Controller
 
     public function getNotifications()
     {
-        $nis = Session::get('nis');
+        $nis = session('nis');
 
         $pengaduanIds = InputAspirasi::where('nis', $nis)->pluck('id_pelaporan');
 
@@ -82,7 +93,7 @@ class DashboardSiswaController extends Controller
                     'pesan' => $notif->pesan,
                     'url' => $notif->url,
                     'dibaca' => $notif->dibaca,
-                    'created_at' => $notif->created_at->diffForHumans(),
+                    'created_at' => $notif->created_at->diffForHumans()
                 ];
             });
 
@@ -93,13 +104,13 @@ class DashboardSiswaController extends Controller
 
         return response()->json([
             'notifications' => $notifications,
-            'unread_count' => $unreadCount,
+            'unread_count' => $unreadCount
         ]);
     }
 
     public function markNotificationsRead()
     {
-        $nis = Session::get('nis');
+        $nis = session('nis');
         $pengaduanIds = InputAspirasi::where('nis', $nis)->pluck('id_pelaporan');
 
         Notifikasi::where('tipe', 'siswa')
@@ -112,12 +123,13 @@ class DashboardSiswaController extends Controller
 
     public function markSingleNotificationRead($id)
     {
-        $nis = Session::get('nis');
+        $nis = session('nis');
         $pengaduanIds = InputAspirasi::where('nis', $nis)->pluck('id_pelaporan');
 
         $notification = Notifikasi::where('tipe', 'siswa')
             ->whereIn('id_pengaduan', $pengaduanIds)
             ->findOrFail($id);
+
         $notification->update(['dibaca' => true]);
 
         $unreadCount = Notifikasi::where('tipe', 'siswa')
@@ -135,10 +147,11 @@ class DashboardSiswaController extends Controller
     public function uploadProfilePicture(Request $request)
     {
         $request->validate([
-            'profile_pic' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'profile_pic' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
 
-        $nis = Session::get('nis');
+        $nis = session('nis');
+
         if ($request->hasFile('profile_pic')) {
             $file = $request->file('profile_pic');
             $filename = 'siswa_' . $nis . '_' . time() . '.' . $file->getClientOriginalExtension();
@@ -147,23 +160,33 @@ class DashboardSiswaController extends Controller
             $siswa = Siswa::where('nis', $nis)->first();
             if ($siswa) {
                 $siswa->update(['profile_pic' => $path]);
-                Session::put('siswa_profile_pic', $path);
+                session(['siswa_profile_pic' => $path]);
             }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Foto profil berhasil diubah',
+                'path' => $path
+            ]);
         }
 
-        return response()->json(['success' => true, 'message' => 'Foto profil berhasil diubah', 'path' => $path ?? null]);
+        return response()->json(['success' => false, 'message' => 'File tidak ditemukan'], 400);
     }
 
     public function deleteProfilePicture(Request $request)
     {
-        $nis = Session::get('nis');
+        $nis = session('nis');
         $siswa = Siswa::where('nis', $nis)->first();
+
         if ($siswa && $siswa->profile_pic) {
             Storage::disk('public')->delete($siswa->profile_pic);
             $siswa->update(['profile_pic' => null]);
-            Session::forget('siswa_profile_pic');
+            session()->forget('siswa_profile_pic');
         }
 
-        return response()->json(['success' => true, 'message' => 'Foto profil dihapus']);
+        return response()->json([
+            'success' => true,
+            'message' => 'Foto profil dihapus'
+        ]);
     }
 }

@@ -5,30 +5,61 @@ namespace App\Http\Controllers\Admin;
 use App\Http\Controllers\Controller;
 use Illuminate\Http\Request;
 use App\Models\InputAspirasi;
-use App\Models\Admin;
+use App\Models\Aspirasi;
 use App\Models\Notifikasi;
 use App\Models\Kategori;
-use Illuminate\Support\Facades\Session;
+use App\Models\Admin;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\Auth;
 
 class DashboardController extends Controller
 {
     public function index()
     {
-
         $total = InputAspirasi::where('status', '!=', 'Dibatalkan')->count();
-        $pending = InputAspirasi::where('status', 'Menunggu')->count();
-        $diproses = InputAspirasi::where('status', 'Proses')->count();
-        $selesai = InputAspirasi::where('status', 'Selesai')->count();
 
-        
-        $pengaduan = InputAspirasi::with(['siswa', 'kategori'])
-            ->where('status', '!=', 'Dibatalkan')
-            ->latest()
+        $menunggu = InputAspirasi::whereDoesntHave('aspirasi')->count();
+        $proses = InputAspirasi::whereHas('aspirasi', function ($q) {
+            $q->where('status', 'Proses');
+        })->count();
+        $selesai = InputAspirasi::whereHas('aspirasi', function ($q) {
+            $q->where('status', 'Selesai');
+        })->count();
+
+        $pengaduan = InputAspirasi::with(['siswa', 'kategori', 'aspirasi'])
+            ->where('input_aspirasi.status', '!=', 'Dibatalkan')
+            ->leftJoin('aspirasi', 'input_aspirasi.id_pelaporan', '=', 'aspirasi.id_input_aspirasi')
+            ->select('input_aspirasi.*')
+            ->orderByRaw("CASE
+                WHEN aspirasi.status = 'Proses' THEN 2
+                WHEN aspirasi.status = 'Selesai' THEN 3
+                ELSE 1
+            END")
+            ->latest('input_aspirasi.created_at')
             ->take(3)
             ->get();
 
         $kategori_stats = Kategori::withCount('inputAspirasi')->get();
+
+        $start = now()->startOfDay()->subDays(6);
+        $end = now()->endOfDay();
+
+        $countsByDate = InputAspirasi::selectRaw('DATE(created_at) as date, COUNT(*) as cnt')
+            ->whereBetween('created_at', [$start, $end])
+            ->where('status', '!=', 'Dibatalkan')
+            ->groupByRaw('DATE(created_at)')
+            ->pluck('cnt', 'date')
+            ->toArray();
+
+        $chart_labels = [];
+        $chart_data = [];
+        for ($i = 6; $i >= 0; $i--) {
+            $date = now()->subDays($i);
+            $label = $date->isoFormat('ddd');
+            $key = $date->toDateString();
+            $chart_labels[] = $label;
+            $chart_data[] = isset($countsByDate[$key]) ? (int) $countsByDate[$key] : 0;
+        }
 
         $notifications = Notifikasi::forAdmin()
             ->with('pengaduan.siswa')
@@ -42,18 +73,20 @@ class DashboardController extends Controller
                     'pesan' => $notif->pesan,
                     'url' => $notif->url,
                     'dibaca' => $notif->dibaca,
-                    'created_at' => $notif->created_at->diffForHumans(),
+                    'created_at' => $notif->created_at->diffForHumans()
                 ];
             });
 
         return view('admin.dashboard.index', compact(
             'total',
-            'pending',
-            'diproses',
+            'menunggu',
+            'proses',
             'selesai',
             'pengaduan',
             'kategori_stats',
-            'notifications'
+            'notifications',
+            'chart_labels',
+            'chart_data'
         ));
     }
 
@@ -71,7 +104,7 @@ class DashboardController extends Controller
                     'pesan' => $notif->pesan,
                     'url' => $notif->url,
                     'dibaca' => $notif->dibaca,
-                    'created_at' => $notif->created_at->diffForHumans(),
+                    'created_at' => $notif->created_at->diffForHumans()
                 ];
             });
 
@@ -79,7 +112,7 @@ class DashboardController extends Controller
 
         return response()->json([
             'notifications' => $notifications,
-            'unread_count' => $unreadCount,
+            'unread_count' => $unreadCount
         ]);
     }
 
@@ -100,13 +133,17 @@ class DashboardController extends Controller
     public function markNotificationsRead()
     {
         Notifikasi::forAdmin()->unread()->update(['dibaca' => true]);
-        return response()->json(['success' => true, 'message' => 'Semua notifikasi ditandai sebagai dibaca']);
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Semua notifikasi ditandai sebagai dibaca'
+        ]);
     }
 
     public function uploadProfilePicture(Request $request)
     {
         $request->validate([
-            'profile_pic' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048',
+            'profile_pic' => 'required|image|mimes:jpeg,png,jpg,gif|max:2048'
         ]);
 
         if ($request->hasFile('profile_pic')) {
@@ -114,20 +151,72 @@ class DashboardController extends Controller
             $filename = 'admin_' . time() . '.' . $file->getClientOriginalExtension();
             $path = $file->storeAs('profile_pictures', $filename, 'public');
 
-            Session::put('profile_pic', $path);
+            $adminId = session('admin_id');
+            if ($adminId) {
+                $admin = Admin::find($adminId);
+                if ($admin) {
+
+                    if ($admin->profile_pic && Storage::disk('public')->exists($admin->profile_pic)) {
+                        Storage::disk('public')->delete($admin->profile_pic);
+                    }
+
+                    $admin->update(['profile_pic' => $path]);
+
+                    session(['profile_pic' => $path]);
+                }
+            }
+
+            return response()->json([
+                'success' => true,
+                'message' => 'Foto profil berhasil diubah',
+                'path' => $path
+            ]);
         }
 
-        return response()->json(['success' => true, 'message' => 'Foto profil berhasil diubah', 'path' => $path ?? null]);
+        return response()->json(['success' => false, 'message' => 'File tidak ditemukan'], 400);
     }
 
     public function deleteProfilePicture(Request $request)
     {
-        $path = Session::get('profile_pic');
-        if ($path) {
-            Storage::disk('public')->delete($path);
-            Session::forget('profile_pic');
+        $adminId = session('admin_id');
+        if ($adminId) {
+            $admin = Admin::find($adminId);
+            if ($admin && $admin->profile_pic) {
+                if (Storage::disk('public')->exists($admin->profile_pic)) {
+                    Storage::disk('public')->delete($admin->profile_pic);
+                }
+
+                $admin->update(['profile_pic' => null]);
+            }
         }
 
-        return response()->json(['success' => true, 'message' => 'Foto profil dihapus']);
+        session()->forget('profile_pic');
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Foto profil dihapus'
+        ]);
+    }
+
+    public function deleteAccount(Request $request)
+    {
+        /** @var Admin $admin */
+        $admin = Auth::user();
+
+        if ($admin->profile_pic) {
+            Storage::disk('public')->delete($admin->profile_pic);
+        }
+
+        $admin->delete();
+
+        Auth::logout();
+        session()->invalidate();
+        session()->regenerateToken();
+
+        return response()->json([
+            'success' => true,
+            'message' => 'Akun berhasil dihapus',
+            'redirect' => route('login')
+        ]);
     }
 }

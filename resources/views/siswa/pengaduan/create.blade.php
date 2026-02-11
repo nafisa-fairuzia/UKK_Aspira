@@ -10,14 +10,13 @@
 
 <main id="main-content" class="py-4 bg-light min-vh-100">
     <div class="siswa-create">
-        <div class="row mb-4">
+        <div class="row mb-4 mt-4">
             <div class="col-12">
                 <div class="p-4 rounded-4 shadow-sm border-0 position-relative overflow-hidden"
                     style="background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);">
                     <div class="position-absolute text-white top-0 end-0 mt-n4 me-n4">
                         <i class="ti ti-message-report" style="font-size: 150px; opacity: 20%;"></i>
                     </div>
-
                     <div class="position-relative z-1 text-white">
                         <h3 class="fw-bold mb-1">Sampaikan Aspirasi Anda</h3>
                         <p class="mb-0 opacity-75">Suara Anda membantu kami membangun sekolah yang lebih baik.</p>
@@ -36,7 +35,7 @@
                                 <div class="p-2 bg-primary-soft rounded-3 me-3 text-primary">
                                     <i class="ti ti-edit fs-4"></i>
                                 </div>
-                                <h5 class="fw-bold mb-0">Detail Laporan</h5>
+                                <h5 class="fw-bold mb-0">Detail Pengaduan</h5>
                             </div>
                         </div>
                         <div class="card-body p-4">
@@ -46,11 +45,13 @@
                                     <div class="input-modern-group">
                                         <select name="id_kategori" id="id_kategori" class="form-select border-0 shadow-none px-0" required>
                                             <option value="" selected disabled>Pilih Kategori...</option>
-                                            @foreach($kategori as $kat)
+                                            @forelse($kategori as $kat)
                                             <option value="{{ $kat->id_kategori }}" {{ old('id_kategori') == $kat->id_kategori ? 'selected' : '' }}>
                                                 {{ $kat->ket_kategori }}
                                             </option>
-                                            @endforeach
+                                            @empty
+                                            <option value="" disabled>Tidak ada kategori</option>
+                                            @endforelse
                                         </select>
                                         <div class="input-line"></div>
                                     </div>
@@ -71,8 +72,8 @@
                                     <label for="ket" class="form-label small fw-bold text-muted">DESKRIPSI <span class="text-danger">*</span></label>
                                     <div class="p-3 bg-light rounded-4">
                                         <textarea name="ket" id="ket" class="form-control border-0 bg-transparent shadow-none"
-                                            rows="10" placeholder="Ceritakan detail masalah..."
-                                            maxlength="255" required style="resize: none;">{{ old('ket') }}</textarea>
+                                            rows="10" placeholder="Ceritakan detail masalah..." maxlength="255" required
+                                            style="resize: none;">{{ old('ket') }}</textarea>
                                     </div>
                                     <div class="d-flex justify-content-between align-items-center mt-2 px-1">
                                         <span class="x-small text-muted"><i class="ti ti-info-circle-filled me-1 text-primary"></i>Maksimal 255 karakter.</span>
@@ -87,7 +88,6 @@
 
                 <div class="col-lg-4 col-xl-3">
                     <div class="d-flex flex-column gap-4">
-
                         <div class="card border-0 shadow-sm rounded-4 overflow-hidden">
                             <div class="card-body p-4 text-center">
                                 <h6 class="fw-bold text-start mb-3">Lampiran Bukti</h6>
@@ -116,46 +116,24 @@
                         <div class="card border-0 bg-white shadow-sm rounded-4 overflow-hidden">
                             <div class="p-4 bg-light text-center border-bottom border-white">
                                 <div class="text-primary mb-2"><i class="ti ti-shield-check fs-2"></i></div>
-                                <p class="small text-muted mb-0 px-2">Laporan akan dikirim secara aman dan terenkripsi.</p>
+                                <p class="small text-muted mb-0 px-2">Pengaduan akan dikirim secara aman dan terenkripsi.</p>
                             </div>
                             <div class="p-4">
                                 <button type="submit" class="btn btn-primary w-100 py-3 rounded-3 fw-bold shadow-sm mb-3">
-                                    Kirim Laporan <i class="ti ti-arrow-right ms-2"></i>
+                                    Kirim Pengaduan <i class="ti ti-arrow-right ms-2"></i>
                                 </button>
                                 <a href="{{ route('siswa.dashboard') }}" class="btn btn-light w-100 py-2 btn-sm text-muted">Kembali</a>
                             </div>
                         </div>
-
                     </div>
                 </div>
             </div>
         </form>
-
     </div>
 </main>
 
-<script>
-    const ketInput = document.getElementById('ket');
-    const charCountSpan = document.getElementById('charCount');
-
-    // Update character count
-    ketInput.addEventListener('input', () => {
-        // Enforce 255 character limit
-        if (ketInput.value.length > 255) {
-            ketInput.value = ketInput.value.substring(0, 255);
-        }
-        charCountSpan.textContent = ketInput.value.length + ' / 255';
-    });
-
-    // Prevent form submission if content exceeds 255 chars
-    document.querySelector('form').addEventListener('submit', function(e) {
-        const ketValue = ketInput.value.trim();
-        if (ketValue.length > 255) {
-            e.preventDefault();
-            alert('Deskripsi tidak boleh lebih dari 255 karakter!');
-            return false;
-        }
-    });
-</script>
+@push('scripts')
+<script src="{{ asset('assets/js/siswa/pengaduan-form.js') }}?v={{ time() }}"></script>
+@endpush
 
 @endsection

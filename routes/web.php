@@ -10,12 +10,14 @@ use App\Http\Controllers\Siswa\DashboardSiswaController;
 use App\Http\Controllers\Siswa\PengaduanController as SiswaPengaduanController;
 use Illuminate\Support\Facades\Route;
 
+Route::get('/', function () {
+    return view('landing-page.index');
+})->name('landing');
 
-Route::get('/', [AuthController::class, 'showLogin'])->name('login');
-Route::post('/', [AuthController::class, 'loginProcess']);
+Route::get('/login', [AuthController::class, 'showLogin'])->name('login');
+Route::post('/login', [AuthController::class, 'loginProcess']);
 Route::post('/logout', [AuthController::class, 'logout'])->name('logout');
 
-// API Routes for Select2
 Route::get('/api/kelas-search', [AuthController::class, 'searchKelas'])->name('api.kelas.search');
 
 
@@ -27,6 +29,12 @@ Route::prefix('admin')->middleware('checklogin')->group(function () {
 
     Route::get('/pengaduan', [PengaduanController::class, 'index'])
         ->name('admin.pengaduan.index');
+
+    Route::get('/pengaduan/export/excel', [PengaduanController::class, 'export'])
+        ->name('admin.pengaduan.export.excel');
+
+    Route::get('/pengaduan/export/pdf', [PengaduanController::class, 'exportPdf'])
+        ->name('admin.pengaduan.export.pdf');
 
     Route::get('/pengaduan/{pengaduan}', [PengaduanController::class, 'show'])
         ->name('admin.pengaduan.show');
@@ -47,6 +55,8 @@ Route::prefix('admin')->middleware('checklogin')->group(function () {
         ->name('admin.profile.upload-picture');
     Route::post('/profile/delete-picture', [DashboardController::class, 'deleteProfilePicture'])
         ->name('admin.profile.delete-picture');
+    Route::post('/profile/delete-account', [DashboardController::class, 'deleteAccount'])
+        ->name('admin.profile.delete-account');
 
     Route::get('/siswa', [SiswaController::class, 'index'])->name('admin.siswa.index');
     Route::get('/siswa/create', [SiswaController::class, 'create'])->name('admin.siswa.create');
@@ -55,16 +65,20 @@ Route::prefix('admin')->middleware('checklogin')->group(function () {
     Route::put('/siswa/{nis}', [SiswaController::class, 'update'])->name('admin.siswa.update');
     Route::delete('/siswa/{nis}', [SiswaController::class, 'destroy'])->name('admin.siswa.destroy');
 
+    Route::post('/siswa/check-nis', [SiswaController::class, 'checkNis']);
+    Route::post('/siswa/check-username', [SiswaController::class, 'checkUsername']);
+
     Route::get('/kategori', [KategoriController::class, 'index'])->name('admin.kategori.index');
     Route::get('/kategori/create', [KategoriController::class, 'create'])->name('admin.kategori.create');
     Route::post('/kategori', [KategoriController::class, 'store'])->name('admin.kategori.store');
     Route::get('/kategori/{id}/edit', [KategoriController::class, 'edit'])->name('admin.kategori.edit');
     Route::put('/kategori/{id}', [KategoriController::class, 'update'])->name('admin.kategori.update');
     Route::delete('/kategori/{id}', [KategoriController::class, 'destroy'])->name('admin.kategori.destroy');
+    Route::post('/kategori/check-duplicate', [KategoriController::class, 'checkDuplicate']);
 
-    // Admin accounts management
     Route::get('/admins', [AdminController::class, 'index'])->name('admin.admins.index');
     Route::post('/admins', [AdminController::class, 'store'])->name('admin.admins.store');
+    Route::post('/admins/check-username', [AdminController::class, 'checkUsername']);
     Route::get('/admins/{id}/edit', [AdminController::class, 'edit'])->name('admin.admins.edit');
     Route::put('/admins/{id}', [AdminController::class, 'update'])->name('admin.admins.update');
     Route::delete('/admins/{id}', [AdminController::class, 'destroy'])->name('admin.admins.destroy');

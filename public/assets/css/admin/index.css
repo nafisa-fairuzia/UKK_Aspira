@@ -1,49 +1,62 @@
-html,
-body {
-    overflow-x: hidden;
-    width: 100%;
-}
-.x-small {
-    font-size: 0.7rem;
-}
-.bg-warning-subtle {
-    background-color: #fff9db !important;
-}
-.bg-primary-subtle {
-    background-color: #e7f5ff !important;
-}
-.bg-success-subtle {
-    background-color: #ebfbee !important;
-}
-.border-warning-subtle {
-    border-color: #ffe066 !important;
-}
-.border-primary-subtle {
-    border-color: #a5d8ff !important;
-}
-.border-success-subtle {
-    border-color: #b2f2bb !important;
-}
-.table thead th {
-    font-size: 0.75rem;
-    text-transform: uppercase;
-    letter-spacing: 0.5px;
-    font-weight: 700;
-    color: #6c757d;
-    border-bottom: 2px solid #f8f9fa;
-}
 .pengaduan-admin .btn-white {
     background-color: #fff;
     transition: 0.2s;
 }
+
 .pengaduan-admin .btn-white:hover {
     background-color: #f8f9fa;
 }
+
 .pengaduan-admin .dropdown-item.active {
     background-color: #0d6efd;
     color: white;
 }
+
 .pengaduan-admin .modal-backdrop.show {
     opacity: 0.8 !important;
     background-color: #000 !important;
+}
+
+.pengaduan-admin .card-header .d-flex > form {
+    margin: 0;
+}
+
+.pengaduan-admin .card-header .d-flex .btn {
+    padding: 6px 10px;
+    border-radius: 8px;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 0.9rem;
+    box-shadow: 0 6px 12px rgba(2, 6, 23, 0.06);
+}
+
+.pengaduan-admin .card-header .d-flex .btn i {
+    font-size: 16px;
+}
+
+@media (max-width: 576px) {
+    .pengaduan-admin .card-header .d-flex {
+        gap: 8px;
+        flex-wrap: nowrap;
+    }
+}
+
+
+.pengaduan-admin .card-header .d-flex .btn-sm {
+    padding: 4px 8px !important;
+    font-size: 0.78rem !important;
+    height: 34px !important;
+    line-height: 1 !important;
+    border-radius: 8px !important;
+    box-shadow: none !important;
+}
+
+.pengaduan-admin .card-header .d-flex .btn-sm i {
+    font-size: 14px !important;
+}
+
+
+.pengaduan-admin .card-header .d-flex > form + form {
+    margin-left: 6px;
 }

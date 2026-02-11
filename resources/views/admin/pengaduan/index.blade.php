@@ -13,16 +13,14 @@
     <main id="main-content" class="py-4 bg-light min-vh-100">
         <div class="container-l" style="overflow: visible;">
 
-            <div class="row mb-4 align-items-center">
+            <div class="row mb-4 align-items-center mt-4">
                 <div class="col">
                     <h4 class="fw-bold text-dark mb-0">Daftar Pengaduan</h4>
                 </div>
             </div>
 
             @if(session('success'))
-            <div class="alert alert-success border-0 shadow-sm rounded-3 mb-4 py-2 small" role="alert">
-                <i class="ti ti-check me-2"></i> {{ session('success') }}
-            </div>
+            <x-alert type="success" />
             @endif
 
             <div class="card border-0 shadow-sm mb-4 rounded-3">
@@ -48,10 +46,10 @@
                                 </select>
                             </div>
 
-                            <div class="col-md-3">
+                            <div class="col-md-2">
                                 <label class="form-label small fw-semibold text-dark mb-2">Cari Pelapor</label>
                                 <div class="input-group">
-                                    <span class="input-group-text bg-white border-2 border-end-0 text-muted px-3">
+                                    <span class="input-group-text bg-white border-2 border-end-0 text-muted px-2">
                                         <i class="ti ti-search"></i>
                                     </span>
                                     <input type="text" name="siswa" class="form-control border-2 border-start-0 shadow-none rounded-end-2"
@@ -71,10 +69,20 @@
                                 </select>
                             </div>
 
-                            <div class="col-md-3">
+                            <div class="col-md-2">
+                                <label class="form-label small fw-semibold text-dark mb-2">Status</label>
+                                <select name="status" class="form-select border-2 shadow-none rounded-2 px-3" style="height: 42px; font-size: 13px;">
+                                    <option value="">Semua Status</option>
+                                    <option value="Menunggu" {{ request('status') == 'Menunggu' ? 'selected' : '' }}>Menunggu</option>
+                                    <option value="Proses" {{ request('status') == 'Proses' ? 'selected' : '' }}>Proses</option>
+                                    <option value="Selesai" {{ request('status') == 'Selesai' ? 'selected' : '' }}>Selesai</option>
+                                </select>
+                            </div>
+
+                            <div class="col-md-2">
                                 <div class="d-flex gap-2">
                                     <button type="submit" class="btn btn-primary fw-bold flex-grow-1 rounded-2 shadow-sm" style="height: 42px; ">
-                                        <i class="ti ti-adjustments-horizontal me-1"></i> Filter
+                                        <i class="ti ti-search me-1"></i> Cari
                                     </button>
                                     <a href="{{ route('admin.pengaduan.index') }}" class="btn btn-outline-secondary border-2 fw-bold rounded-2 px-3 d-flex align-items-center justify-content-center"
                                         style="height: 42px;" title="Reset Filter">
@@ -93,8 +101,32 @@
                     <div class="d-flex align-items-center justify-content-between">
                         <div class="d-flex align-items-center">
                             <i class="ti ti-message-report me-2 text-primary fs-4"></i>
-                            <h6 class="mb-0 fw-bold">Laporan Masuk</h6>
+                            <h6 class="mb-0 fw-bold text-dark">Pengaduan Masuk</h6>
                         </div>
+                        <div class="d-flex gap-2 align-items-center">
+                            <form method="GET" action="{{ route('admin.pengaduan.export.excel') }}" class="d-inline">
+                                @foreach(request()->query() as $key => $value)
+                                @if($key !== 'page')
+                                <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                                @endif
+                                @endforeach
+                                <button type="submit" class="btn btn-sm btn-success shadow-sm rounded-2 px-3 excel" style="font-weight: 600;">
+                                    Cetak Excel
+                                </button>
+                            </form>
+
+                            <form method="GET" action="{{ route('admin.pengaduan.export.pdf') }}" class="d-inline">
+                                @foreach(request()->query() as $key => $value)
+                                @if($key !== 'page')
+                                <input type="hidden" name="{{ $key }}" value="{{ $value }}">
+                                @endif
+                                @endforeach
+                                <button type="submit" class="btn btn-sm btn-primary shadow-sm rounded-2 px-3" style="font-weight: 600;">
+                                    Cetak PDF
+                                </button>
+                            </form>
+                        </div>
+
                     </div>
                 </div>
 
@@ -103,40 +135,31 @@
                         <table id="pengaduanTable" class="table table-hover align-middle mb-0 w-100">
                             <thead class="bg-light">
                                 <tr>
-                                    <th class="text-center" style="width: 5%">No</th>
-                                    <th style="width: 25%">Informasi Pelapor</th>
-                                    <th style="width: 15%">Kategori</th>
-                                    <th class="text-center" style="width: 30%">Status</th>
-                                    <th style="width: 30%">Tanggal</th>
-                                    <th class="text-center" style="width: 20%">Aksi</th>
+                                    <th class="text-center text-dark" style="width: 5%;">No</th>
+                                    <th class="text-dark" style="width: 25%;">Informasi Pelapor</th>
+                                    <th class="text-dark" style="width: 15%;">Kategori</th>
+                                    <th class="text-center text-dark" style="width: 15%;">Status</th>
+                                    <th class="text-dark" style="width: 25%;">Tanggal</th>
+                                    <th class="text-end pe-4 text-dark" style="width: 15%;">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
-                                @foreach($pengaduan as $p)
+                                @forelse($pengaduan as $p)
                                 <tr>
                                     <td class="text-center text-muted small fw-bold">{{ $pengaduan->firstItem() + $loop->index }}</td>
                                     <td>
-                                        <div class="d-flex align-items-center">
-                                            @if($p->siswa && $p->siswa->profile_pic)
-                                            <img src="{{ asset('storage/' . $p->siswa->profile_pic) }}"
-                                                class="rounded-circle me-2 border shadow-sm"
-                                                style="width: 35px; height: 35px; object-fit: cover; flex-shrink: 0;"
-                                                onerror="this.onerror=null; this.src='https://ui-avatars.com/api/?name={{ urlencode($p->siswa->nama) }}&color=7F9CF5&background=EBF4FF';">
-                                            @else
-                                            <div class="avatar-sm me-2 bg-primary-subtle rounded-circle d-flex align-items-center justify-content-center" style="width: 35px; height: 35px; flex-shrink: 0;">
-                                                <span class="text-primary fw-bold small">{{ substr($p->siswa->nama ?? 'S', 0, 1) }}</span>
-                                            </div>
-                                            @endif
+                                        <div class="d-flex align-items-center gap-2">
+                                            <x-avatar :user="$p->siswa" size="35" class="me-0" />
                                             <div>
                                                 <div class="fw-bold text-dark mb-0">{{ $p->siswa->nama ?? 'N/A' }}</div>
-                                                <small class="text-muted">Kelas: {{ $p->siswa->kelas->nama_kelas }}</small>
+                                                <small class="text-muted">Kelas: {{ $p->siswa->kelas->nama_kelas ?? 'N/A' }}</small>
                                             </div>
                                         </div>
                                     </td>
                                     <td>
                                         <span class="text-dark fw-medium small">{{ $p->kategori->ket_kategori ?? 'Umum' }}</span>
                                     </td>
-                                    <td class="text-center ">
+                                    <td class="text-center">
                                         @php
                                         $currentStatus = $p->aspirasi->status ?? 'Menunggu';
                                         $badgeClass = match($currentStatus) {
@@ -151,45 +174,59 @@
                                         </span>
                                     </td>
                                     <td>
-                                        <div class="small fw-medium">{{ $p->created_at->format('d M Y') }}</div>
-                                        <div class="text-muted x-small">{{ $p->created_at->format('H:i') }} WIB</div>
+                                        <div class="small fw-medium">{{ $p->formatted_created_date }}</div>
+                                        <div class="text-muted x-small">{{ $p->formatted_created_time }} WIB</div>
                                     </td>
+
                                     <td class="text-end pe-3">
                                         <div class="d-flex gap-1 justify-content-end">
                                             <a href="{{ route('admin.pengaduan.show', $p->id_pelaporan) }}" class="btn btn-sm btn-white border shadow-sm px-2" title="Detail">
-                                                <i class="ti ti-eye text-primary"></i>
+                                                <i class="ti ti-eye text-primary" style="font-size: 16px;"></i>
                                             </a>
 
+                                            @php
+                                            $pStatus = $p->aspirasi->status ?? 'Menunggu';
+                                            $canEdit = $pStatus !== 'Selesai';
+                                            @endphp
+
+                                            @if($canEdit)
                                             <div class="dropdown">
-                                                <button class="btn btn-sm btn-white border shadow-sm dropdown-toggle fw-bold" type="button" data-bs-toggle="dropdown">
-                                                    Update
+                                                <button class="btn btn-sm btn-white border shadow-sm dropdown-toggle fw-bold" type="button" data-bs-toggle="dropdown" title="Edit Status">
+                                                    <i class="ti ti-settings text-secondary" style="font-size: 16px;"></i>
                                                 </button>
                                                 <ul class="dropdown-menu dropdown-menu-end shadow-lg border-0 p-2">
-                                                    <li><small class="dropdown-header text-uppercase opacity-50">Ganti Status:</small></li>
-                                                    @foreach(['Menunggu', 'Proses', 'Selesai'] as $st)
-                                                    @php $pStatus = $p->aspirasi->status ?? 'Menunggu'; @endphp
-                                                    @if($st == 'Menunggu' && $pStatus != 'Menunggu')
-                                                    @continue
-                                                    @endif
-                                                    @if($pStatus == 'Selesai')
+                                                    <li><small class="dropdown-header text-uppercase opacity-50 ">Ganti Status:</small></li>
+                                                    @php
+                                                    $availableStatuses = ['Menunggu' => 'clock', 'Proses' => 'loader', 'Selesai' => 'check'];
+                                                    @endphp
+                                                    @foreach($availableStatuses as $status => $icon)
+                                                    @if(($status === 'Menunggu' && $pStatus !== 'Menunggu') || $pStatus === 'Selesai')
                                                     @continue
                                                     @endif
                                                     <li>
-                                                        <form action="{{ route('admin.pengaduan.update', $p->id_pelaporan) }}" method="POST">
-                                                            @csrf @method('PUT')
-                                                            <input type="hidden" name="status" value="{{ $st }}">
-                                                            <button type="submit" class="dropdown-item rounded-2 {{ $pStatus == $st ? 'active disabled' : '' }}">
-                                                                <i class="ti ti-{{ $st == 'Menunggu' ? 'clock' : ($st == 'Proses' ? 'loader' : 'check') }} me-1"></i> {{ $st }}
+                                                        <form action="{{ route('admin.pengaduan.update', $p->id_pelaporan) }}" method="POST" class="d-inline">
+                                                            @csrf
+                                                            @method('PUT')
+                                                            <input type="hidden" name="status" value="{{ $status }}">
+                                                            <button type="submit" class="dropdown-item rounded-2 {{ $pStatus === $status ? 'active disabled' : '' }}">
+                                                                <i class="ti ti-{{ $icon }} me-1"></i> {{ $status }}
                                                             </button>
                                                         </form>
                                                     </li>
                                                     @endforeach
                                                 </ul>
                                             </div>
+                                            @else
+                                            <button class="btn btn-sm btn-white border shadow-sm px-2" type="button" disabled title="Pengaduan sudah selesai">
+                                                <i class="ti ti-settings-check text-success" style="font-size: 16px;"></i>
+                                            </button>
+                                            @endif
                                         </div>
                                     </td>
                                 </tr>
-                                @endforeach
+                                @empty
+                                <x-empty-state colspan="6" icon="ti-inbox" message="Tidak ada pengaduan yang ditemukan" />
+                                @endforelse
                             </tbody>
                         </table>
                     </div>

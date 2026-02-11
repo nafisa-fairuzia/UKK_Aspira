@@ -31,19 +31,16 @@ class AdminController extends Controller
         $request->validate([
             'nama' => 'required|string|max:255',
             'username' => 'required|string|max:255|unique:admin,username',
-            'password' => 'required|string|min:6',
-            'profile_pic' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
+            'password' => 'required|string|min:6'
         ]);
 
-        $data = $request->only(['nama', 'username']);
-        $data['password'] = Hash::make($request->password);
+        $dataAdmin = [
+            'nama' => $request->nama,
+            'username' => $request->username,
+            'password' => Hash::make($request->password)
+        ];
 
-        if ($request->hasFile('profile_pic')) {
-            $path = $request->file('profile_pic')->store('profile_pictures', 'public');
-            $data['profile_pic'] = $path;
-        }
-
-        Admin::create($data);
+        Admin::create($dataAdmin);
         return back()->with('success', 'Admin berhasil ditambahkan');
     }
 
@@ -56,25 +53,18 @@ class AdminController extends Controller
     public function update(Request $request, $id)
     {
         $admin = Admin::findOrFail($id);
+
         $request->validate([
             'nama' => 'required|string|max:255',
             'username' => 'required|string|max:255|unique:admin,username,' . $admin->id,
-            'password' => 'nullable|string|min:6',
-            'profile_pic' => 'nullable|image|mimes:jpeg,png,jpg,gif|max:2048'
+            'password' => 'nullable|string|min:6'
         ]);
 
         $admin->nama = $request->nama;
         $admin->username = $request->username;
+
         if ($request->filled('password')) {
             $admin->password = Hash::make($request->password);
-        }
-
-        if ($request->hasFile('profile_pic')) {
-            if ($admin->profile_pic) {
-                Storage::disk('public')->delete($admin->profile_pic);
-            }
-            $path = $request->file('profile_pic')->store('profile_pictures', 'public');
-            $admin->profile_pic = $path;
         }
 
         $admin->save();
@@ -84,13 +74,25 @@ class AdminController extends Controller
     public function destroy($id)
     {
         $admin = Admin::findOrFail($id);
+
         if (Auth::id() === $admin->id) {
             return back()->with('error', 'Tidak dapat menghapus akun Anda sendiri');
         }
-        if ($admin->profile_pic) {
-            Storage::disk('public')->delete($admin->profile_pic);
-        }
+
         $admin->delete();
         return back()->with('success', 'Admin berhasil dihapus');
+    }
+
+    public function checkUsername(Request $request)
+    {
+        $request->validate([
+            'username' => 'required|string'
+        ]);
+
+        $exists = Admin::where('username', $request->username)->exists();
+
+        return response()->json([
+            'exists' => $exists
+        ]);
     }
 }

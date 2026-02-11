@@ -29,7 +29,7 @@ class AppServiceProvider extends ServiceProvider
 
         view()->composer('*', function ($view) {
             $role = Session::get('role');
-            
+
             if ($role === 'admin') {
                 $unreadNotifications = Notifikasi::forAdmin()
                     ->unread()

@@ -18,55 +18,37 @@ class AuthController extends Controller
         return view('auth.login', compact('all_kelas'));
     }
 
-
     public function loginProcess(Request $request)
     {
-        if ($request->role === 'admin') {
-            $request->validate([
-                'username' => 'required',
-                'password' => 'required'
-            ]);
+        $request->validate([
+            'username' => 'required',
+            'password' => 'required'
+        ]);
 
-            $admin = Admin::where('username', $request->username)->first();
-
-            if (!$admin || !Hash::check($request->password, $admin->password)) {
-                return back()->with('error', 'Username atau Password salah');
-            }
-
+        $admin = Admin::where('username', $request->username)->first();
+        if ($admin && Hash::check($request->password, $admin->password)) {
             Session::put('login', true);
             Session::put('role', 'admin');
             Session::put('admin_id', $admin->id);
             Session::put('nama', $admin->nama);
-            Session::put('profile_pic', $admin->profile_pic);
+            Session::put('profile_pic', $admin->profile_pic ?? null);
 
             return redirect('/admin/dashboard');
         }
 
-        if ($request->role === 'siswa') {
-            $request->validate([
-                'nis'      => 'required',
-                'kelas_id' => 'required'
-            ]);
-
-            $siswa = Siswa::where('nis', $request->nis)
-                ->where('kelas_id', $request->kelas_id)
-                ->first();
-
-            if (!$siswa) {
-                return back()->with('error', 'NIS atau Kelas tidak sesuai');
-            }
-
+        $siswa = Siswa::where('username', $request->username)->first();
+        if ($siswa && Hash::check($request->password, $siswa->password)) {
             Session::put('login', true);
             Session::put('role', 'siswa');
-            Session::put('siswa_id', $siswa->id);
+            Session::put('siswa_id', $siswa->nis);
             Session::put('nis', $siswa->nis);
             Session::put('nama', $siswa->nama);
-            Session::put('kelas_id', $siswa->kelas_id);
+            Session::put('kelas_id', $siswa->id_kelas ?? null);
 
             return redirect('/siswa/dashboard');
         }
 
-        return back()->with('error', 'Role tidak valid');
+        return back()->with('error', 'Username atau Password salah');
     }
 
     public function logout()

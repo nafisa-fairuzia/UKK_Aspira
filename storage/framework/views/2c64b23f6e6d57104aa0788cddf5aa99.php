@@ -1,10 +1,11 @@
 <?php
-$role = Session::get('role');
-$nama = Session::get('nama');
-
+// Setup session data dan konfigurasi header
+$role = session('role');
+$nama = session('nama');
 $avatarName = $nama ?? 'Admin';
 
-$profilePic = ($role == 'admin') ? Session::get('profile_pic') : (Session::get('siswa_profile_pic') ?? Session::get('profile_pic'));
+// Profile pic logic: admin uses 'profile_pic', siswa uses 'siswa_profile_pic'
+$profilePic = ($role == 'admin') ? session('profile_pic') : (session('siswa_profile_pic') ?? session('profile_pic'));
 $defaultAvatar = "https://ui-avatars.com/api/?name=" . urlencode($avatarName) . "&background=0ea5e9&color=fff";
 $displayPic = $profilePic ? asset('storage/' . $profilePic) : $defaultAvatar;
 $baseUrl = ($role == 'admin') ? '/admin' : '/siswa';
@@ -72,6 +73,30 @@ $baseUrl = ($role == 'admin') ? '/admin' : '/siswa';
         background: #cbd5e1;
         border-radius: 3px;
     }
+
+    #profileModal {
+        z-index: 1050;
+    }
+
+    #profileModal .modal-backdrop {
+        z-index: 1040;
+    }
+
+    #confirmDeletePicModal {
+        z-index: 1060;
+    }
+
+    #confirmDeletePicModal .modal-backdrop {
+        z-index: 1050;
+    }
+
+    .modal.show {
+        z-index: inherit;
+    }
+
+    .modal-backdrop.show {
+        z-index: inherit;
+    }
 </style>
 
 <header id="header" class="d-flex align-items-center px-4" style="height: 70px;">
@@ -114,7 +139,7 @@ $baseUrl = ($role == 'admin') ? '/admin' : '/siswa';
                         <img src="<?php echo e($displayPic); ?>" class="profile-img rounded-circle me-2" width="40" height="40" style="object-fit: cover;">
                         <div>
                             <div class="fw-bold small"><?php echo e($avatarName); ?></div>
-                            <small class="text-muted" style="font-size: 11px;"><?php echo e($role == 'admin' ? 'Administrator' : 'Siswa'); ?></small>
+                            <small class="text-muted" style="font-size: 11px;"><?php echo e($role == 'admin' ? 'Admin' : 'Siswa'); ?></small>
                         </div>
                     </div>
                 </li>
@@ -156,16 +181,17 @@ $baseUrl = ($role == 'admin') ? '/admin' : '/siswa';
 </div>
 
 <div class="modal fade" id="confirmDeletePicModal" tabindex="-1" aria-hidden="true">
-    <div class="modal-dialog modal-dialog-centered modal-sm"> <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
+    <div class="modal-dialog modal-dialog-centered modal-sm">
+        <div class="modal-content border-0 shadow-lg" style="border-radius: 20px;">
             <div class="modal-header border-0 pb-0">
                 <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
             </div>
-            
+
             <div class="modal-body px-4 pt-0 pb-4 text-center">
                 <div class="mx-auto mb-3 d-flex align-items-center justify-content-center bg-danger-subtle rounded-circle" style="width: 70px; height: 70px;">
                     <i class="ti ti-trash-x fs-1 text-danger"></i>
                 </div>
-                
+
                 <h5 class="fw-bold mb-2">Hapus Foto Profil?</h5>
                 <p class="text-muted small mb-0">Apakah Anda yakin? Tindakan ini akan menghapus foto Anda secara permanen.</p>
             </div>
@@ -178,7 +204,7 @@ $baseUrl = ($role == 'admin') ? '/admin' : '/siswa';
     </div>
 </div>
 
-<form id="logout-form" action="<?php echo e(route('logout')); ?>" method="POST" class="d-none"><?php echo csrf_field(); ?></form>
+
 
 <script>
     document.addEventListener('DOMContentLoaded', function() {
@@ -216,7 +242,6 @@ $baseUrl = ($role == 'admin') ? '/admin' : '/siswa';
                 </div>
             </a>`).join('') : '<div class="text-center py-3 small text-muted">Tidak ada notifikasi</div>';
 
-                    // Attach click handlers to notification items (mark as read + update badge)
                     list.querySelectorAll('.notification-item').forEach(function(item) {
                         item.addEventListener('click', function(ev) {
                             ev.preventDefault();
@@ -233,18 +258,15 @@ $baseUrl = ($role == 'admin') ? '/admin' : '/siswa';
                                     },
                                     credentials: 'same-origin'
                                 }).then(r => r.json()).then(resp => {
-                                    // decrement badge
                                     const countEl = document.getElementById('notification-count');
                                     let count = parseInt(countEl.textContent.replace('+', '')) || 0;
                                     count = Math.max(0, count - 1);
                                     setBadge(count);
 
-                                    // remove unread visual indicator
                                     this.classList.remove('bg-light');
                                     const dot = this.querySelector('.unread-dot');
                                     if (dot) dot.remove();
 
-                                    // navigate after marking
                                     if (targetUrl && targetUrl !== '#') window.location.href = targetUrl;
                                 }).catch(err => {
                                     console.error('Mark single notification failed', err);
@@ -297,6 +319,8 @@ $baseUrl = ($role == 'admin') ? '/admin' : '/siswa';
             }).then(res => {
                 if (res.success) {
                     updateImages(`/storage/${res.path}?t=${Date.now()}`);
+                    const deleteBtn = document.getElementById('deletePicBtn');
+                    if (deleteBtn) deleteBtn.disabled = false;
                     alert('Berhasil!');
                 } else {
                     alert(res.message || 'Upload gagal');
@@ -312,11 +336,22 @@ $baseUrl = ($role == 'admin') ? '/admin' : '/siswa';
 
         if (document.getElementById('deletePicBtn')) {
             document.getElementById('deletePicBtn').onclick = () => {
-                new bootstrap.Modal('#confirmDeletePicModal').show();
+                const confirmModal = new bootstrap.Modal('#confirmDeletePicModal', {
+                    backdrop: 'static'
+                });
+                confirmModal.show();
+
+                const el = document.getElementById('confirmDeletePicModal');
+                el.addEventListener('shown.bs.modal', function() {
+                    el.style.zIndex = '1060';
+                    const backdrop = document.querySelector('#confirmDeletePicModal ~ .modal-backdrop');
+                    if (backdrop) {
+                        backdrop.style.zIndex = '1050';
+                    }
+                });
             };
         }
 
-        // Handle confirm delete button
         if (document.getElementById('confirmDeleteBtn')) {
             document.getElementById('confirmDeleteBtn').onclick = () => {
                 const btn = document.getElementById('confirmDeleteBtn');
@@ -338,7 +373,6 @@ $baseUrl = ($role == 'admin') ? '/admin' : '/siswa';
                             bootstrap.Modal.getInstance('#confirmDeletePicModal').hide();
                             updateImages(document.querySelector('.profile-img').dataset.default);
                             alert('Foto profil berhasil dihapus!');
-                            // Disable delete button after deletion
                             document.getElementById('deletePicBtn').disabled = true;
                         }
                     }).catch(err => {
@@ -353,6 +387,38 @@ $baseUrl = ($role == 'admin') ? '/admin' : '/siswa';
 
         fetchNotif();
         setInterval(fetchNotif, 60000);
+
+        if (document.getElementById('confirmDeleteAccountBtn')) {
+            document.getElementById('confirmDeleteAccountBtn').onclick = () => {
+                const btn = document.getElementById('confirmDeleteAccountBtn');
+                btn.disabled = true;
+                btn.innerHTML = '<span class=\"spinner-border spinner-border-sm me-2\"></span>Menghapus...';
+
+                fetch(`${baseUrl}/profile/delete-account`, {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRF-TOKEN': csrf
+                        },
+                        credentials: 'same-origin'
+                    })
+                    .then(async (r) => {
+                        if (!r.ok) throw new Error('Delete failed ' + r.status);
+                        return r.json();
+                    }).then(res => {
+                        if (res.success) {
+                            alert(res.message);
+                            if (res.redirect) {
+                                window.location.href = res.redirect;
+                            }
+                        }
+                    }).catch(err => {
+                        console.error('Delete account error', err);
+                        alert('Gagal menghapus akun. Cek console untuk detail.');
+                        btn.disabled = false;
+                        btn.innerHTML = 'Hapus Akun';
+                    });
+            };
+        }
     });
 
     function openProfileModal() {

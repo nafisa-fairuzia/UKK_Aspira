@@ -10,7 +10,7 @@
 
 <main id="main-content" class="py-4 bg-light min-vh-100">
     <div class="siswa-create">
-        <div class="row mb-4">
+        <div class="row mb-4 mt-4">
             <div class="col-12">
                 <div class="p-4 rounded-4 shadow-sm border-0 position-relative overflow-hidden"
                     style="background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);">
@@ -36,7 +36,7 @@
                                 <div class="p-2 bg-primary-soft rounded-3 me-3 text-primary">
                                     <i class="ti ti-edit fs-4"></i>
                                 </div>
-                                <h5 class="fw-bold mb-0">Detail Laporan</h5>
+                                <h5 class="fw-bold mb-0">Detail Pengaduan</h5>
                             </div>
                         </div>
                         <div class="card-body p-4">
@@ -131,90 +131,14 @@
     </div>
 </main>
 
+@push('scripts')
 <script>
-    const APP_DATA = {
+    window.appData = {
         hasExistingImage: Boolean("{{ $aspirasi->gambar }}"),
         existingImageSrc: "{{ $aspirasi->gambar ? asset('storage/' . $aspirasi->gambar) : '' }}"
     };
-
-    const gambarInput = document.getElementById('gambar');
-    const dropArea = document.getElementById('drop-area');
-    const uploadUI = document.getElementById('upload-ui');
-    const previewUI = document.getElementById('preview-ui');
-    const previewImg = document.getElementById('previewImg');
-    const clearImageBtn = document.getElementById('clearImage');
-    const charCountSpan = document.getElementById('charCount');
-    const ketInput = document.getElementById('ket');
-
-    if (APP_DATA.hasExistingImage) {
-        previewImg.src = APP_DATA.existingImageSrc;
-        uploadUI.classList.add('d-none');
-        previewUI.classList.remove('d-none');
-        clearImageBtn.classList.remove('d-none');
-    }
-
-    ['dragover', 'dragleave', 'drop'].forEach(eventName => {
-        dropArea.addEventListener(eventName, e => e.preventDefault());
-    });
-
-    dropArea.addEventListener('dragover', () => {
-        dropArea.classList.add('bg-primary-soft');
-        dropArea.style.borderColor = '#0ea5e9';
-    });
-
-    dropArea.addEventListener('dragleave', () => {
-        dropArea.classList.remove('bg-primary-soft');
-        dropArea.style.borderColor = 'transparent';
-    });
-
-    function handleFileSelect() {
-        const file = gambarInput.files[0];
-        if (file && file.type.startsWith('image/')) {
-            const reader = new FileReader();
-            reader.onload = (e) => {
-                previewImg.src = e.target.result;
-                uploadUI.classList.add('d-none');
-                previewUI.classList.remove('d-none');
-                clearImageBtn.classList.remove('d-none');
-            };
-            reader.readAsDataURL(file);
-        }
-    }
-
-    gambarInput.addEventListener('change', handleFileSelect);
-
-    dropArea.addEventListener('drop', (e) => {
-        dropArea.classList.remove('bg-primary-soft');
-        const files = e.dataTransfer.files;
-        if (files.length > 0) {
-            gambarInput.files = files;
-            handleFileSelect();
-        }
-    });
-
-    clearImageBtn.addEventListener('click', (e) => {
-        e.preventDefault();
-        gambarInput.value = '';
-        uploadUI.classList.remove('d-none');
-        previewUI.classList.add('d-none');
-        clearImageBtn.classList.add('d-none');
-    });
-
-    ketInput.addEventListener('input', () => {
-        if (ketInput.value.length > 255) {
-            ketInput.value = ketInput.value.substring(0, 255);
-        }
-        charCountSpan.textContent = ketInput.value.length + ' / 255';
-    });
-
-    document.querySelector('form').addEventListener('submit', function(e) {
-        const ketValue = ketInput.value.trim();
-        if (ketValue.length > 255) {
-            e.preventDefault();
-            alert('Deskripsi tidak boleh lebih dari 255 karakter!');
-            return false;
-        }
-    });
 </script>
+<script src="{{ asset('assets/js/siswa/pengaduan-form.js') }}?v={{ time() }}"></script>
+@endpush
 
 @endsection

@@ -12,39 +12,8 @@
     animation: scaleIn 0.3s ease-out;
 }
 
-@keyframes scaleIn {
-    from {
-        transform: scale(0.8);
-        opacity: 0;
-    }
-    to {
-        transform: scale(1);
-        opacity: 1;
-    }
-}
-
 #confirmDeleteModal .ti-trash-x {
     animation: shake 0.5s ease-in-out;
-}
-
-@keyframes shake {
-    0%,
-    100% {
-        transform: translateX(0);
-    }
-    10%,
-    30%,
-    50%,
-    70%,
-    90% {
-        transform: translateX(-5px);
-    }
-    20%,
-    40%,
-    60%,
-    80% {
-        transform: translateX(5px);
-    }
 }
 
 #confirmDeleteModal .modal-footer .btn {
@@ -78,15 +47,6 @@
 
 #confirmDeleteModal.show {
     animation: fadeIn 0.3s ease-out;
-}
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-    }
-    to {
-        opacity: 1;
-    }
 }
 
 @media (max-width: 576px) {

@@ -4,15 +4,33 @@
 
 <?php $__env->startPush('styles'); ?>
 <link rel="stylesheet" href="<?php echo e(asset('assets/css/admin/show.css')); ?>?v=<?php echo e(time()); ?>">
+<style>
+    /* Tambahan CSS sederhana untuk memastikan stepper terlihat oke */
+    .step-dot {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+        color: #adb5bd;
+    }
+
+    .step-dot-active {
+        background: #0d6efd;
+        color: #fff;
+    }
+</style>
 <?php $__env->stopPush(); ?>
 
 <?php $__env->startSection('content'); ?>
-
 <div class="show-admin">
-
     <main id="main-content" class="py-4" style="background: #f4f7f9; min-height: 100vh;">
-        <div class="container">
+        <div class="container mt-4">
 
+            
             <div class="row align-items-center mb-4">
                 <div class="col-md-8">
                     <h4 class="fw-bold text-dark mb-0">Detail Pengaduan</h4>
@@ -28,8 +46,10 @@
             </div>
 
             <div class="row g-4">
+                
                 <div class="col-lg-8">
 
+                    
                     <div class="card border-0 shadow-sm mb-4 overflow-hidden">
                         <div class="card-body p-4">
                             <div class="row position-relative">
@@ -39,24 +59,31 @@
                                 'Proses' => ['icon' => 'ti-settings', 'title' => 'Diproses'],
                                 'Selesai' => ['icon' => 'ti-circle-check', 'title' => 'Selesai']
                                 ];
-                                $reached = true;
+                                $currentStatus = $pengaduan->aspirasi->status ?? 'Menunggu';
+
+                                $statusKeys = array_keys($statusList);
+                                $currentIndex = array_search($currentStatus, $statusKeys);
                                 ?>
+
                                 <?php $__currentLoopData = $statusList; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $key => $val): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
+                                <?php $loopIndex = array_search($key, $statusKeys); ?>
                                 <div class="col text-center">
                                     <div class="d-flex align-items-center justify-content-center mb-2">
-                                        <div class="step-dot <?php echo e($reached ? 'step-dot-active' : ''); ?>">
+                                        <div class="step-dot <?php echo e($loopIndex <= $currentIndex ? 'step-dot-active' : ''); ?>">
                                             <i class="ti <?php echo e($val['icon']); ?>"></i>
                                         </div>
                                     </div>
-                                    <span class="small fw-bold <?php echo e($reached ? 'text-dark' : 'text-muted'); ?>"><?php echo e($val['title']); ?></span>
+                                    <span class="small fw-bold <?php echo e($loopIndex <= $currentIndex ? 'text-dark' : 'text-muted'); ?>">
+                                        <?php echo e($val['title']); ?>
+
+                                    </span>
                                 </div>
-                                <?php $currentStatus = $pengaduan->aspirasi->status ?? 'Menunggu'; ?>
-                                <?php if($currentStatus == $key): ?> <?php $reached = false; ?> <?php endif; ?>
                                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                             </div>
                         </div>
                     </div>
 
+                    
                     <div class="card border-0 shadow-sm mb-4 overflow-hidden">
                         <div class="row g-0">
                             <div class="col-md-7 border-end">
@@ -90,15 +117,16 @@
                                     </div>
                                     <div>
                                         <small class="text-muted d-block fw-bold text-uppercase" style="font-size: 10px;">Dikirim Pada</small>
-                                        <span class="text-dark fw-medium small"><?php echo e($pengaduan->created_at->format('d M Y')); ?></span>
+                                        <span class="text-dark fw-medium small"><?php echo e($pengaduan->formatted_created_date); ?></span>
                                         <span class="text-muted small mx-1">•</span>
-                                        <span class="text-dark fw-medium small"><?php echo e($pengaduan->created_at->format('H:i')); ?> WIB</span>
+                                        <span class="text-dark fw-medium small"><?php echo e($pengaduan->formatted_created_time); ?> WIB</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
+                    
                     <div class="card border-0 shadow-sm mb-4">
                         <div class="card-header bg-white py-3 border-bottom border-light">
                             <div class="d-flex align-items-center">
@@ -110,7 +138,7 @@
                             <div class="mb-4">
                                 <label class="small fw-bold text-uppercase text-muted d-block mb-2">Deskripsi</label>
                                 <div class="bg-light p-4 rounded-3" style="border-left: 4px solid #0d6efd;">
-                                    <p class="mb-0 text-dark" style="white-space: pre-line; font-size: 0.95rem; line-height:1.6;">
+                                    <p class="mb-0 text-dark" >
                                         <?php echo e($pengaduan->ket ?? $pengaduan->deskripsi); ?>
 
                                     </p>
@@ -134,8 +162,9 @@
                     </div>
                 </div>
 
+                
                 <div class="col-lg-4">
-                    <div class="sticky-wrapper" style="position: sticky; top: 80px;">
+                    <div class="sticky-top" style="top: 80px;">
                         <div class="card border-0 shadow-sm overflow-hidden">
                             <div class="card-header bg-primary text-white py-3 border-0">
                                 <div class="d-flex align-items-center">
@@ -144,47 +173,80 @@
                                 </div>
                             </div>
                             <div class="card-body p-4">
-                                <form method="POST" action="<?php echo e(route('admin.pengaduan.update', $pengaduan->id_pelaporan)); ?>">
-                                    <?php echo csrf_field(); ?> <?php echo method_field('PUT'); ?>
+                                <?php if(session('success')): ?>
+                                <div class="mb-3 alert alert-success d-flex align-items-center border-0 small py-2">
+                                    <i class="ti ti-circle-check me-2"></i> Berhasil diperbarui
+                                </div>
+                                <?php endif; ?>
+
+                                <?php if(session('error')): ?>
+                                <div class="mb-3 alert alert-danger d-flex align-items-center border-0 small py-2">
+                                    <i class="ti ti-alert-circle me-2"></i> <?php echo e(session('error')); ?>
+
+                                </div>
+                                <?php endif; ?>
+
+                                <form method="POST" action="<?php echo e(route('admin.pengaduan.update', $pengaduan->id_pelaporan)); ?>" id="formUpdate">
+                                    <?php echo csrf_field(); ?>
+                                    <?php echo method_field('PUT'); ?>
 
                                     <div class="mb-4">
                                         <label class="form-label small fw-bold text-muted text-uppercase">Tentukan Status</label>
-                                        <select name="status" class="form-select border-2 shadow-none py-2 fw-medium" <?php echo e(($pengaduan->aspirasi->status ?? 'Menunggu') == 'Selesai' ? 'disabled' : ''); ?>>
+                                        <select name="status" class="form-select border-2 shadow-none py-2 fw-medium" id="statusSelect" <?php echo e($currentStatus == 'Selesai' ? 'disabled' : ''); ?>>
                                             <?php $__currentLoopData = ['Menunggu', 'Proses', 'Selesai']; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $st): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); ?>
-                                            <?php $cur = $pengaduan->aspirasi->status ?? 'Menunggu'; ?>
-                                            <option value="<?php echo e($st); ?>" <?php echo e($cur == $st ? 'selected' : ''); ?> <?php echo e(($st == 'Menunggu' && $cur != 'Menunggu') ? 'disabled' : ''); ?>><?php echo e($st); ?></option>
+                                            <option value="<?php echo e($st); ?>" <?php echo e($currentStatus == $st ? 'selected' : ''); ?>
+
+                                                <?php echo e(($st == 'Menunggu' && $currentStatus != 'Menunggu') ? 'disabled' : ''); ?>>
+                                                <?php echo e($st); ?>
+
+                                            </option>
                                             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
                                         </select>
                                     </div>
 
                                     <div class="mb-4">
                                         <label class="form-label small fw-bold text-muted text-uppercase">Respon Resmi</label>
-                                        <textarea name="tanggapan_admin" class="form-control border-2 bg-light shadow-none p-3" rows="5" placeholder="Berikan arahan atau solusi..." style="font-size: 0.9rem;"><?php echo e($aspirasi->feedback ?? ''); ?></textarea>
+                                        <textarea name="tanggapan_admin" id="tanggapan_admin" class="form-control border-2 bg-light shadow-none p-3 <?php $__errorArgs = ['tanggapan_admin'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?> is-invalid <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>" rows="5" placeholder="Berikan arahan atau solusi..." style="font-size: 0.9rem;" <?php echo e($currentStatus == 'Selesai' ? 'disabled' : ''); ?>><?php echo e($pengaduan->aspirasi?->feedback ?? ''); ?></textarea>
+                                        <?php $__errorArgs = ['tanggapan_admin'];
+$__bag = $errors->getBag($__errorArgs[1] ?? 'default');
+if ($__bag->has($__errorArgs[0])) :
+if (isset($message)) { $__messageOriginal = $message; }
+$message = $__bag->first($__errorArgs[0]); ?>
+                                        <div class="invalid-feedback d-block mt-1"><?php echo e($message); ?></div>
+                                        <?php unset($message);
+if (isset($__messageOriginal)) { $message = $__messageOriginal; }
+endif;
+unset($__errorArgs, $__bag); ?>
                                     </div>
 
-                                    <button type="submit" class="btn btn-primary w-100 fw-bold py-2 shadow-sm">
-                                        <i class="ti ti-device-floppy me-1"></i> Perbarui 
+                                    <button type="submit" class="btn btn-primary w-100 fw-bold py-2 shadow-sm" id="submitBtn" <?php echo e($currentStatus == 'Selesai' ? 'disabled' : ''); ?>>
+                                        <i class="ti ti-device-floppy me-1"></i> Perbarui
                                     </button>
                                 </form>
 
-                                <?php if(session('success')): ?>
-                                <div class="mt-3 alert alert-success d-flex align-items-center border-0 small py-2 mb-0">
-                                    <i class="ti ti-circle-check me-2"></i> Berhasil diperbarui
+                                <?php if($currentStatus == 'Selesai'): ?>
+                                <div class="mt-3 alert alert-info d-flex align-items-center border-0 small py-2">
+                                    <i class="ti ti-info-circle me-2"></i> Pengaduan sudah selesai, tidak dapat diubah
                                 </div>
                                 <?php endif; ?>
                             </div>
                         </div>
+
                         <a href="<?php echo e(route('admin.pengaduan.index')); ?>" class="btn btn-outline-primary mt-4 w-100 fw-bold rounded-3">
                             <i class="ti ti-arrow-narrow-left me-1"></i> Kembali
                         </a>
                     </div>
                 </div>
-
-            </div>
-        </div>
+            </div> 
+        </div> 
     </main>
-
 </div>
-
 <?php $__env->stopSection(); ?>
 <?php echo $__env->make('layout.main', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\laragon\www\UKK_Aspira\resources\views/admin/pengaduan/show.blade.php ENDPATH**/ ?>

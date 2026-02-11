@@ -36,23 +36,43 @@
     width: 300px;
     z-index: 1;
     filter: drop-shadow(0 10px 20px rgba(0, 0, 0, 0.1));
+    height: auto;
+    object-fit: contain;
 }
 
-.stat-hover {
-    transition: all 0.3s cubic-bezier(0.25, 0.8, 0.25, 1);
+@media (max-width: 1200px) {
+    .welcome-img {
+        width: 250px;
+        right: 10px;
+    }
 }
-.stat-hover:hover {
-    transform: translateY(-5px);
-    box-shadow: 0 15px 30px rgba(0, 0, 0, 0.08) !important;
+
+@media (max-width: 768px) {
+    .welcome-img {
+        width: 180px;
+        right: 15px;
+        bottom: -10px;
+        opacity: 0.95;
+    }
+}
+
+@media (max-width: 576px) {
+    .welcome-img {
+        width: 140px;
+        right: 10px;
+        bottom: -5px;
+    }
 }
 
 .timeline {
     position: relative;
 }
+
 .timeline-status {
     position: relative;
     width: 20px;
 }
+
 .timeline-status .dot {
     width: 14px;
     height: 14px;
@@ -61,6 +81,7 @@
     z-index: 2;
     margin-top: 5px;
 }
+
 .timeline-status .line {
     position: absolute;
     width: 2px;
@@ -71,21 +92,9 @@
     top: 5px;
     z-index: 1;
 }
+
 .timeline-item:last-child .line {
     display: none;
-}
-
-.bg-primary-subtle {
-    background: rgba(99, 102, 241, 0.1);
-}
-.bg-warning-subtle {
-    background: rgba(245, 158, 11, 0.1);
-}
-.bg-info-subtle {
-    background: rgba(14, 165, 233, 0.1);
-}
-.bg-success-subtle {
-    background: rgba(16, 185, 129, 0.1);
 }
 
 .siswa-dashboard #main-content {
@@ -106,99 +115,7 @@
     }
 }
 
-@media (max-width: 450px) {
-    body {
-        font-size: 13px;
-    }
-
-    #main-content {
-        padding: 18px 12px;
-    }
-
-    .container-l,
-    .container-fluid {
-        padding: 0 8px;
-    }
-
-    .card {
-        border-radius: 12px;
-        margin-bottom: 12px;
-    }
-
-    .card-header {
-        padding: 12px !important;
-    }
-
-    .card-body {
-        padding: 12px !important;
-    }
-
-    .btn {
-        padding: 8px 12px;
-        font-size: 12px;
-    }
-
-    .btn-sm {
-        padding: 6px 10px;
-        font-size: 11px;
-    }
-
-    .form-control,
-    .form-select {
-        font-size: 13px;
-        padding: 8px 10px;
-        height: auto;
-    }
-
-    .modal-body {
-        padding: 12px !important;
-    }
-
-    .row {
-        margin-right: -6px;
-        margin-left: -6px;
-    }
-
-    .col,
-    [class*="col-"] {
-        padding-right: 6px;
-        padding-left: 6px;
-    }
-
-    h1 {
-        font-size: 18px;
-    }
-    h2 {
-        font-size: 16px;
-    }
-    h3 {
-        font-size: 14px;
-    }
-    h4 {
-        font-size: 13px;
-    }
-    h5 {
-        font-size: 12px;
-    }
-    h6 {
-        font-size: 11px;
-    }
-    .sidebar-overlay {
-        display: block !important;
-    }
-
-    #header {
-        width: 100%;
-        left: 0 !important;
-    }
-
-    #main-content {
-        margin-left: 0 !important;
-        width: 100% !important;
-    }
-}
-
-@media (max-width: 380px) {
+@media (max-width: 576px) {
     .btn {
         padding: 6px 10px;
         font-size: 11px;
@@ -211,7 +128,14 @@
     .card-header {
         padding: 10px !important;
     }
+    .welcome-img {
+        width: 200px;
+        align-items: center;
 
+    }
+    .welcome-card .card-body {
+        padding: 20px 12px 200px !important;
+    }
     h4 {
         font-size: 12px;
     }

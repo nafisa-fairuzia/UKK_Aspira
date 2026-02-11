@@ -13,16 +13,14 @@ class SiswaSeeder extends Seeder
      */
     public function run(): void
     {
-        Siswa::create([
-            'nis' => '12345',
-            'nama' => 'Siswa Test',
-            'kelas' => 'X',
-        ]);
+        Siswa::firstOrCreate(
+            ['nis' => '12345'],
+            ['nama' => 'Anisa Putri', 'id_kelas' => 1, 'username' => 'anisa', 'password' => 'password123']
+        );
 
-        Siswa::create([
-            'nis' => '67890',
-            'nama' => 'Siswa Lain',
-            'kelas' => 'XI',
-        ]);
+        Siswa::firstOrCreate(
+            ['nis' => '67890'],
+            ['nama' => 'Farhan Akbar', 'id_kelas' => 2, 'username' => 'farhan', 'password' => 'password123']
+        );
     }
 }

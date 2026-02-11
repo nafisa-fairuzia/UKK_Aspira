@@ -12,10 +12,12 @@
         rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    <link rel="stylesheet" href="<?php echo e(asset('assets/css/global.css')); ?>">
+    <link rel="stylesheet" href="<?php echo e(asset('assets/css/modal.css')); ?>">
     <link rel="stylesheet" href="<?php echo e(asset('assets/css/admin/dashboard.css')); ?>">
+    <link rel="stylesheet" href="<?php echo e(asset('assets/css/admin/index.css')); ?>">
     <link rel="stylesheet" href="<?php echo e(asset('assets/css/admin/kategori.css')); ?>">
     <link rel="stylesheet" href="<?php echo e(asset('assets/css/admin/show.css')); ?>">
-    <link rel="stylesheet" href="<?php echo e(asset('assets/css/admin/siswa.css')); ?>">
     <link rel="stylesheet" href="<?php echo e(asset('assets/css/siswa/dashboard.css')); ?>">
     <link rel="stylesheet" href="<?php echo e(asset('assets/css/siswa/create.css')); ?>">
     <link rel="stylesheet" href="<?php echo e(asset('assets/css/siswa/riwayat.css')); ?>">
@@ -69,8 +71,6 @@
         </div>
     </div>
 
-    <!-- Using simple browser confirm dialogs for delete actions. No JS modal is required. -->
-
     <script>
         let logoutModalInstance = null;
         let logoutFormEl = null;
@@ -104,6 +104,8 @@
             });
         })();
     </script>
+
+    <?php echo $__env->make('components.logout-modal', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?>
 
     <?php echo $__env->yieldPushContent('scripts'); ?>
 </body>

@@ -1,18 +1,21 @@
 <nav id="sidebar">
-    <!-- Toggle button di mobile (kanan atas sidebar) -->
     <button class="btn sidebar-close-btn d-lg-none p-0 border-0" onclick="toggleMobile()" title="Tutup">
         <i class="bi bi-x fs-2"></i>
     </button>
 
     <div class="sidebar-header d-flex align-items-center justify-content-center">
         <div class="logo-container d-flex align-items-center justify-content-center">
-            <img src="{{ asset('assets/img/logo_aspira2.png') }}" class="img-fluid logo-img" alt="Logo">
+            <img src="{{ asset('assets/img/logo_aspira1.png') }}" class="img-fluid logo-img" alt="Logo">
         </div>
-        <span class="fw-bold logo-text">ASPIRA<span style="color: #0ea5e9;">.</span></span>
+        <span class="fw-bold logo-text italic" style="font-size: 18px;">ASPIRA</span>
     </div>
 
     <div class="nav flex-column">
-        @if(!session()->has('nis'))
+        @php
+        $isAdmin = !session()->has('nis');
+        @endphp
+
+        @if($isAdmin)
         <a href="{{ route('admin.dashboard') }}" class="nav-link {{ request()->routeIs('admin.dashboard') ? 'active' : '' }}">
             <i class="ti ti-dashboard"></i>
             <span class="nav-text">Dashboard</span>
@@ -37,7 +40,6 @@
             <i class="ti ti-shield-check"></i>
             <span class="nav-text">Data Admin</span>
         </a>
-
         @else
         <a href="{{ route('siswa.dashboard') }}" class="nav-link {{ request()->routeIs('siswa.dashboard') ? 'active' : '' }}">
             <i class="ti ti-dashboard"></i>
@@ -60,9 +62,6 @@
                 <i class="ti ti-logout"></i>
                 <span class="nav-text">Logout</span>
             </a>
-            <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
-                @csrf
-            </form>
         </div>
     </div>
 </nav>

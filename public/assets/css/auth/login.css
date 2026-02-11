@@ -88,57 +88,6 @@ body {
     color: #0f172a;
 }
 
-@media (max-width: 991px) {
-    body {
-        height: auto;
-        padding: 15px;
-    }
-
-    .main-card {
-        max-height: none;
-    }
-
-    .visual-section {
-        padding: 20px 0px 0px;
-        text-align: center;
-        align-items: center;
-    }
-
-    .visual-section h1 {
-        font-size: 20px;
-    }
-
-    .illustration-wrapper img {
-        max-width: 200px;
-    }
-
-    .form-section {
-        padding: 20px 20px;
-    }
-
-    .form-section h2 {
-        margin-bottom: 20px !important;
-    }
-
-    .login-tabs {
-        padding: 6px !important;
-        border-radius: 8px !important;
-    }
-
-    .tab-btn {
-        padding: 5px !important;
-        border-radius: 4px !important;
-        font-size: 0.8rem !important;
-    }
-}
-
-.form-label {
-    font-weight: 600;
-    font-size: 0.85rem;
-    color: #475569;
-    margin-bottom: 8px;
-}
-
 .form-control {
     background-color: #f8fafc;
     border: 2px solid #f1f5f9;
@@ -239,15 +188,51 @@ body {
     cursor: pointer;
     z-index: 10;
 }
-
-@keyframes fadeIn {
-    from {
-        opacity: 0;
-        transform: translateY(10px);
+.hover-sky:hover {
+    color: #0ea5e9 !important;
+    transition: all 0.3s ease;
+}
+@media (max-width: 991px) {
+    body {
+        height: auto;
+        padding: 15px;
     }
 
-    to {
-        opacity: 1;
-        transform: translateY(0);
+    .main-card {
+        max-height: none;
+    }
+
+    .visual-section {
+        padding: 20px 0px 0px;
+        text-align: center;
+        align-items: center;
+    }
+
+    .visual-section h1 {
+        font-size: 20px;
+    }
+
+    .illustration-wrapper img {
+        max-width: 200px;
+    }
+
+    .form-section {
+        padding: 0px 20px 10px;
+    }
+
+    .form-section h2 {
+        font-size: 20px;
+        margin-bottom: 20px !important;
+    }
+
+    .login-tabs {
+        padding: 6px !important;
+        border-radius: 8px !important;
+    }
+
+    .tab-btn {
+        padding: 5px !important;
+        border-radius: 4px !important;
+        font-size: 0.8rem !important;
     }
 }

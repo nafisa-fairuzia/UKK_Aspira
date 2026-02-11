@@ -4,15 +4,33 @@
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset('assets/css/admin/show.css') }}?v={{ time() }}">
+<style>
+    /* Tambahan CSS sederhana untuk memastikan stepper terlihat oke */
+    .step-dot {
+        width: 40px;
+        height: 40px;
+        border-radius: 50%;
+        background: #e9ecef;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        margin: 0 auto;
+        color: #adb5bd;
+    }
+
+    .step-dot-active {
+        background: #0d6efd;
+        color: #fff;
+    }
+</style>
 @endpush
 
 @section('content')
-
 <div class="show-admin">
-
     <main id="main-content" class="py-4" style="background: #f4f7f9; min-height: 100vh;">
-        <div class="container">
+        <div class="container mt-4">
 
+            {{-- Header --}}
             <div class="row align-items-center mb-4">
                 <div class="col-md-8">
                     <h4 class="fw-bold text-dark mb-0">Detail Pengaduan</h4>
@@ -28,8 +46,10 @@
             </div>
 
             <div class="row g-4">
+                {{-- Kolom Kiri: Informasi Utama --}}
                 <div class="col-lg-8">
 
+                    {{-- Status Stepper --}}
                     <div class="card border-0 shadow-sm mb-4 overflow-hidden">
                         <div class="card-body p-4">
                             <div class="row position-relative">
@@ -39,24 +59,30 @@
                                 'Proses' => ['icon' => 'ti-settings', 'title' => 'Diproses'],
                                 'Selesai' => ['icon' => 'ti-circle-check', 'title' => 'Selesai']
                                 ];
-                                $reached = true;
+                                $currentStatus = $pengaduan->aspirasi->status ?? 'Menunggu';
+
+                                $statusKeys = array_keys($statusList);
+                                $currentIndex = array_search($currentStatus, $statusKeys);
                                 @endphp
+
                                 @foreach($statusList as $key => $val)
+                                @php $loopIndex = array_search($key, $statusKeys); @endphp
                                 <div class="col text-center">
                                     <div class="d-flex align-items-center justify-content-center mb-2">
-                                        <div class="step-dot {{ $reached ? 'step-dot-active' : '' }}">
+                                        <div class="step-dot {{ $loopIndex <= $currentIndex ? 'step-dot-active' : '' }}">
                                             <i class="ti {{ $val['icon'] }}"></i>
                                         </div>
                                     </div>
-                                    <span class="small fw-bold {{ $reached ? 'text-dark' : 'text-muted' }}">{{ $val['title'] }}</span>
+                                    <span class="small fw-bold {{ $loopIndex <= $currentIndex ? 'text-dark' : 'text-muted' }}">
+                                        {{ $val['title'] }}
+                                    </span>
                                 </div>
-                                @php $currentStatus = $pengaduan->aspirasi->status ?? 'Menunggu'; @endphp
-                                @if($currentStatus == $key) @php $reached = false; @endphp @endif
                                 @endforeach
                             </div>
                         </div>
                     </div>
 
+                    {{-- Identitas Pelapor --}}
                     <div class="card border-0 shadow-sm mb-4 overflow-hidden">
                         <div class="row g-0">
                             <div class="col-md-7 border-end">
@@ -90,15 +116,16 @@
                                     </div>
                                     <div>
                                         <small class="text-muted d-block fw-bold text-uppercase" style="font-size: 10px;">Dikirim Pada</small>
-                                        <span class="text-dark fw-medium small">{{ $pengaduan->created_at->format('d M Y') }}</span>
+                                        <span class="text-dark fw-medium small">{{ $pengaduan->formatted_created_date }}</span>
                                         <span class="text-muted small mx-1">•</span>
-                                        <span class="text-dark fw-medium small">{{ $pengaduan->created_at->format('H:i') }} WIB</span>
+                                        <span class="text-dark fw-medium small">{{ $pengaduan->formatted_created_time }} WIB</span>
                                     </div>
                                 </div>
                             </div>
                         </div>
                     </div>
 
+                    {{-- Deskripsi & Gambar --}}
                     <div class="card border-0 shadow-sm mb-4">
                         <div class="card-header bg-white py-3 border-bottom border-light">
                             <div class="d-flex align-items-center">
@@ -110,7 +137,7 @@
                             <div class="mb-4">
                                 <label class="small fw-bold text-uppercase text-muted d-block mb-2">Deskripsi</label>
                                 <div class="bg-light p-4 rounded-3" style="border-left: 4px solid #0d6efd;">
-                                    <p class="mb-0 text-dark" style="white-space: pre-line; font-size: 0.95rem; line-height:1.6;">
+                                    <p class="mb-0 text-dark" >
                                         {{ $pengaduan->ket ?? $pengaduan->deskripsi }}
                                     </p>
                                 </div>
@@ -133,8 +160,9 @@
                     </div>
                 </div>
 
+                {{-- Kolom Kanan: Umpan Balik Admin --}}
                 <div class="col-lg-4">
-                    <div class="sticky-wrapper" style="position: sticky; top: 80px;">
+                    <div class="sticky-top" style="top: 80px;">
                         <div class="card border-0 shadow-sm overflow-hidden">
                             <div class="card-header bg-primary text-white py-3 border-0">
                                 <div class="d-flex align-items-center">
@@ -143,46 +171,62 @@
                                 </div>
                             </div>
                             <div class="card-body p-4">
-                                <form method="POST" action="{{ route('admin.pengaduan.update', $pengaduan->id_pelaporan) }}">
-                                    @csrf @method('PUT')
+                                @if(session('success'))
+                                <div class="mb-3 alert alert-success d-flex align-items-center border-0 small py-2">
+                                    <i class="ti ti-circle-check me-2"></i> Berhasil diperbarui
+                                </div>
+                                @endif
+
+                                @if(session('error'))
+                                <div class="mb-3 alert alert-danger d-flex align-items-center border-0 small py-2">
+                                    <i class="ti ti-alert-circle me-2"></i> {{ session('error') }}
+                                </div>
+                                @endif
+
+                                <form method="POST" action="{{ route('admin.pengaduan.update', $pengaduan->id_pelaporan) }}" id="formUpdate">
+                                    @csrf
+                                    @method('PUT')
 
                                     <div class="mb-4">
                                         <label class="form-label small fw-bold text-muted text-uppercase">Tentukan Status</label>
-                                        <select name="status" class="form-select border-2 shadow-none py-2 fw-medium" {{ ($pengaduan->aspirasi->status ?? 'Menunggu') == 'Selesai' ? 'disabled' : '' }}>
+                                        <select name="status" class="form-select border-2 shadow-none py-2 fw-medium" id="statusSelect" {{ $currentStatus == 'Selesai' ? 'disabled' : '' }}>
                                             @foreach(['Menunggu', 'Proses', 'Selesai'] as $st)
-                                            @php $cur = $pengaduan->aspirasi->status ?? 'Menunggu'; @endphp
-                                            <option value="{{ $st }}" {{ $cur == $st ? 'selected' : '' }} {{ ($st == 'Menunggu' && $cur != 'Menunggu') ? 'disabled' : '' }}>{{ $st }}</option>
+                                            <option value="{{ $st }}" {{ $currentStatus == $st ? 'selected' : '' }}
+                                                {{ ($st == 'Menunggu' && $currentStatus != 'Menunggu') ? 'disabled' : '' }}>
+                                                {{ $st }}
+                                            </option>
                                             @endforeach
                                         </select>
                                     </div>
 
                                     <div class="mb-4">
                                         <label class="form-label small fw-bold text-muted text-uppercase">Respon Resmi</label>
-                                        <textarea name="tanggapan_admin" class="form-control border-2 bg-light shadow-none p-3" rows="5" placeholder="Berikan arahan atau solusi..." style="font-size: 0.9rem;">{{ $aspirasi->feedback ?? '' }}</textarea>
+                                        <textarea name="tanggapan_admin" id="tanggapan_admin" class="form-control border-2 bg-light shadow-none p-3 @error('tanggapan_admin') is-invalid @enderror" rows="5" placeholder="Berikan arahan atau solusi..." style="font-size: 0.9rem;" {{ $currentStatus == 'Selesai' ? 'disabled' : '' }}>{{ $pengaduan->aspirasi?->feedback ?? '' }}</textarea>
+                                        @error('tanggapan_admin')
+                                        <div class="invalid-feedback d-block mt-1">{{ $message }}</div>
+                                        @enderror
                                     </div>
 
-                                    <button type="submit" class="btn btn-primary w-100 fw-bold py-2 shadow-sm">
-                                        <i class="ti ti-device-floppy me-1"></i> Perbarui 
+                                    <button type="submit" class="btn btn-primary w-100 fw-bold py-2 shadow-sm" id="submitBtn" {{ $currentStatus == 'Selesai' ? 'disabled' : '' }}>
+                                        <i class="ti ti-device-floppy me-1"></i> Perbarui
                                     </button>
                                 </form>
 
-                                @if(session('success'))
-                                <div class="mt-3 alert alert-success d-flex align-items-center border-0 small py-2 mb-0">
-                                    <i class="ti ti-circle-check me-2"></i> Berhasil diperbarui
+                                @if($currentStatus == 'Selesai')
+                                <div class="mt-3 alert alert-info d-flex align-items-center border-0 small py-2">
+                                    <i class="ti ti-info-circle me-2"></i> Pengaduan sudah selesai, tidak dapat diubah
                                 </div>
                                 @endif
                             </div>
                         </div>
+
                         <a href="{{ route('admin.pengaduan.index') }}" class="btn btn-outline-primary mt-4 w-100 fw-bold rounded-3">
                             <i class="ti ti-arrow-narrow-left me-1"></i> Kembali
                         </a>
                     </div>
                 </div>
-
             </div>
-        </div>
+        </div> 
     </main>
-
 </div>
-
 @endsection

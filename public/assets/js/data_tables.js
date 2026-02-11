@@ -6,13 +6,26 @@
                 const tbl = document.querySelector(selector);
                 if (!tbl) return;
 
-                const $tbl = $(selector).DataTable({
+                let config = {
                     paging: false,
                     info: false,
                     lengthChange: false,
                     searching: true,
                     dom: 't'
-                });
+                };
+
+                if (selector === '#pengaduanTable') {
+                    config.columnDefs = [
+                        { targets: 0, width: '5%' },
+                        { targets: 1, width: '25%' },
+                        { targets: 2, width: '15%' },
+                        { targets: 3, width: '20%' },
+                        { targets: 4, width: '20%' },
+                        { targets: 5, width: '15%' }
+                    ];
+                }
+
+                const $tbl = $(selector).DataTable(config);
 
                 if (!skipSearchBox.includes(selector)) {
                     const card = tbl.closest('.card');

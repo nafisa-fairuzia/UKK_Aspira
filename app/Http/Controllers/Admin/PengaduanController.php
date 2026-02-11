@@ -8,10 +8,13 @@ use App\Models\InputAspirasi;
 use App\Models\Kategori;
 use App\Models\Aspirasi;
 use App\Models\Notifikasi;
-use Illuminate\Support\Facades\Notification;
+use App\Exports\PengaduanExport;
+use Maatwebsite\Excel\Facades\Excel;
+use Barryvdh\DomPDF\Facade\Pdf;
 
 class PengaduanController extends Controller
 {
+
     public function index(Request $request)
     {
         $query = InputAspirasi::with(['kategori', 'siswa', 'aspirasi'])
@@ -20,14 +23,15 @@ class PengaduanController extends Controller
                     $qa->whereIn('status', ['Menunggu', 'Proses', 'Selesai']);
                 })->orWhereDoesntHave('aspirasi');
             })
-            ->latest();
+            ->leftJoin('aspirasi', 'input_aspirasi.id_pelaporan', '=', 'aspirasi.id_input_aspirasi')
+            ->select('input_aspirasi.*');
 
-        if ($request->status) {
+        if ($request->filled('status')) {
             if ($request->status === 'Menunggu') {
-                $query->where(function ($q) use ($request) {
+                $query->where(function ($q) {
                     $q->whereDoesntHave('aspirasi')
-                        ->orWhereHas('aspirasi', function ($qa) use ($request) {
-                            $qa->where('status', $request->status);
+                        ->orWhereHas('aspirasi', function ($qa) {
+                            $qa->where('status', 'Menunggu');
                         });
                 });
             } else {
@@ -37,80 +41,170 @@ class PengaduanController extends Controller
             }
         }
 
-        if ($request->kategori) {
+        if ($request->filled('kategori')) {
             $query->where('id_kategori', $request->kategori);
         }
 
-        if ($request->siswa) {
+        if ($request->filled('siswa')) {
             $query->whereHas('siswa', function ($q) use ($request) {
                 $q->where('nama', 'like', '%' . $request->siswa . '%')
                     ->orWhere('nis', 'like', '%' . $request->siswa . '%');
             });
         }
 
-        if ($request->search) {
+        if ($request->filled('search')) {
             $query->whereHas('siswa', function ($q) use ($request) {
                 $q->where('nama', 'like', '%' . $request->search . '%');
             });
         }
 
-        if ($request->tanggal) {
+        if ($request->filled('tanggal')) {
             $query->whereDate('created_at', $request->tanggal);
         }
 
-        if ($request->bulan) {
+        if ($request->filled('bulan')) {
             $query->whereMonth('created_at', $request->bulan);
         }
 
-        return view('admin.pengaduan.index', [
-            'pengaduan' => $query->paginate(10)->appends($request->query()),
-            'kategori'  => Kategori::all()
-        ]);
+        $query->orderByRaw("CASE
+                WHEN aspirasi.status = 'Proses' THEN 2
+                WHEN aspirasi.status = 'Selesai' THEN 3
+                ELSE 1
+            END")
+            ->latest('input_aspirasi.created_at');
+
+        $pengaduan = $query->paginate(10)->appends($request->query());
+        $kategori = Kategori::all();
+
+        return view('admin.pengaduan.index', compact('pengaduan', 'kategori'));
     }
 
     public function show(InputAspirasi $pengaduan)
     {
-        $pengaduan->load(['siswa', 'kategori']);
-        $aspirasi = Aspirasi::where('id_input_aspirasi', $pengaduan->id_pelaporan)->first();
-        return view('admin.pengaduan.show', compact('pengaduan', 'aspirasi'));
+        $pengaduan->load(['siswa', 'kategori', 'aspirasi']);
+        $currentStatus = $pengaduan->aspirasi->status ?? 'Menunggu';
+
+        return view('admin.pengaduan.show', compact('pengaduan', 'currentStatus'));
     }
 
     public function update(Request $request, InputAspirasi $pengaduan)
     {
         $request->validate([
             'status' => 'required|in:Menunggu,Proses,Selesai',
-            'tanggapan_admin' => 'nullable|string|max:1000',
+            'tanggapan_admin' => 'nullable|string|max:1000'
         ]);
 
-        $oldStatus = optional($pengaduan->aspirasi)->status ?? 'Menunggu';
+        $pengaduan->load('aspirasi');
+        $oldStatus = $pengaduan->aspirasi->status ?? 'Menunggu';
 
         if ($oldStatus === 'Selesai') {
-            return redirect()->back()->with('error', 'Tidak dapat mengubah status pengaduan yang sudah Selesai.');
+            return redirect()->back()->with('error', 'Tidak dapat mengubah status pengaduan yang sudah Selesai');
         }
 
         if ($request->status === 'Menunggu' && $oldStatus !== 'Menunggu') {
-            return redirect()->back()->with('error', 'Tidak dapat mengubah status kembali ke Menunggu.');
+            return redirect()->back()->with('error', 'Tidak dapat mengubah status kembali ke Menunggu');
         }
 
-        Aspirasi::updateOrCreate(
-            ['id_input_aspirasi' => $pengaduan->id_pelaporan],
-            [
-                'status' => $request->status,
-                'id_kategori' => $pengaduan->id_kategori,
-                'feedback' => $request->tanggapan_admin,
-            ]
-        );
+        try {
 
-        if ($oldStatus !== $request->status) {
-            Notifikasi::create([
-                'judul' => 'Status Pengaduan Diperbarui',
-                'pesan' => 'Status pengaduan Anda telah diperbarui menjadi: ' . $request->status,
-                'url' => route('siswa.pengaduan.show', $pengaduan->id_pelaporan),
-                'tipe' => 'siswa',
-                'id_pengaduan' => $pengaduan->id_pelaporan,
-            ]);
+            $aspirasi = Aspirasi::updateOrCreate(
+                ['id_input_aspirasi' => $pengaduan->id_pelaporan],
+                [
+                    'status' => $request->status,
+                    'id_kategori' => $pengaduan->id_kategori,
+                    'feedback' => $request->tanggapan_admin,
+                    'updated_at' => now()
+                ]
+            );
+
+            if ($oldStatus !== $request->status) {
+                Notifikasi::create([
+                    'judul' => 'Status Pengaduan Diperbarui',
+                    'pesan' => 'Status pengaduan Anda telah diperbarui menjadi: ' . $request->status,
+                    'url' => route('siswa.pengaduan.show', $pengaduan->id_pelaporan),
+                    'tipe' => 'siswa',
+                    'id_pengaduan' => $pengaduan->id_pelaporan
+                ]);
+            }
+
+            return redirect()->back()->with('success', 'Pengaduan berhasil diperbarui');
+        } catch (\Exception $e) {
+            return redirect()->back()->with('error', 'Terjadi kesalahan saat memperbarui pengaduan: ' . $e->getMessage());
+        }
+    }
+
+    public function export(Request $request)
+    {
+        $fileName = 'Daftar-Pengaduan-' . now()->format('d-m-Y-His') . '.xlsx';
+        return Excel::download(new PengaduanExport($request), $fileName);
+    }
+
+    public function exportPdf(Request $request)
+    {
+        $query = InputAspirasi::with(['kategori', 'siswa', 'aspirasi'])
+            ->where(function ($q) {
+                $q->whereHas('aspirasi', function ($qa) {
+                    $qa->whereIn('status', ['Menunggu', 'Proses', 'Selesai']);
+                })->orWhereDoesntHave('aspirasi');
+            })
+            ->leftJoin('aspirasi', 'input_aspirasi.id_pelaporan', '=', 'aspirasi.id_input_aspirasi')
+            ->select('input_aspirasi.*');
+
+        if ($request->filled('status')) {
+            if ($request->status === 'Menunggu') {
+                $query->where(function ($q) {
+                    $q->whereDoesntHave('aspirasi')
+                        ->orWhereHas('aspirasi', function ($qa) {
+                            $qa->where('status', 'Menunggu');
+                        });
+                });
+            } else {
+                $query->whereHas('aspirasi', function ($qa) use ($request) {
+                    $qa->where('status', $request->status);
+                });
+            }
         }
 
-        return redirect()->back()->with('success', 'Pengaduan berhasil diperbarui');
+        if ($request->filled('kategori')) {
+            $query->where('id_kategori', $request->kategori);
+        }
+
+        if ($request->filled('siswa')) {
+            $query->whereHas('siswa', function ($q) use ($request) {
+                $q->where('nama', 'like', '%' . $request->siswa . '%')
+                    ->orWhere('nis', 'like', '%' . $request->siswa . '%');
+            });
+        }
+
+        if ($request->filled('search')) {
+            $query->whereHas('siswa', function ($q) use ($request) {
+                $q->where('nama', 'like', '%' . $request->search . '%');
+            });
+        }
+
+        if ($request->filled('tanggal')) {
+            $query->whereDate('created_at', $request->tanggal);
+        }
+
+        if ($request->filled('bulan')) {
+            $query->whereMonth('created_at', $request->bulan);
+        }
+
+        $query->orderByRaw("CASE
+                WHEN aspirasi.status = 'Proses' THEN 2
+                WHEN aspirasi.status = 'Selesai' THEN 3
+                ELSE 1
+            END")
+            ->latest('input_aspirasi.created_at');
+
+        $pengaduan = $query->get();
+        $kategori = Kategori::all();
+        $status = $request->status ?? null;
+
+        $pdf = Pdf::loadView('admin.pengaduan.pdf', compact('pengaduan', 'kategori', 'status'))
+            ->setPaper('a4', 'landscape');
+
+        $fileName = 'Daftar-Pengaduan-' . now()->format('Ymd_His') . '.pdf';
+        return $pdf->download($fileName);
     }
 }

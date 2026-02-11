@@ -10,7 +10,7 @@
 
 <main id="main-content" class="py-4 bg-light min-vh-100">
     <div class="siswa-create">
-        <div class="row mb-4">
+        <div class="row mb-4 mt-4">
             <div class="col-12">
                 <div class="p-4 rounded-4 shadow-sm border-0 position-relative overflow-hidden"
                     style="background: linear-gradient(135deg, #0ea5e9 0%, #2563eb 100%);">
@@ -36,7 +36,7 @@
                                 <div class="p-2 bg-primary-soft rounded-3 me-3 text-primary">
                                     <i class="ti ti-edit fs-4"></i>
                                 </div>
-                                <h5 class="fw-bold mb-0">Detail Laporan</h5>
+                                <h5 class="fw-bold mb-0">Detail Pengaduan</h5>
                             </div>
                         </div>
                         <div class="card-body p-4">
@@ -153,8 +153,9 @@ unset($__errorArgs, $__bag); ?>
     </div>
 </main>
 
+<?php $__env->startPush('scripts'); ?>
 <script>
-    // Membungkus status gambar ke variabel JS murni untuk menghindari error "Decorators"
+    // Skrip interaktif untuk upload gambar dan validasi form saat edit pengaduan
     const APP_DATA = {
         hasExistingImage: Boolean("<?php echo e($aspirasi->gambar); ?>"),
         existingImageSrc: "<?php echo e($aspirasi->gambar ? asset('storage/' . $aspirasi->gambar) : ''); ?>"
@@ -169,7 +170,6 @@ unset($__errorArgs, $__bag); ?>
     const charCountSpan = document.getElementById('charCount');
     const ketInput = document.getElementById('ket');
 
-    // Display existing image on page load
     if (APP_DATA.hasExistingImage) {
         previewImg.src = APP_DATA.existingImageSrc;
         uploadUI.classList.add('d-none');
@@ -177,12 +177,10 @@ unset($__errorArgs, $__bag); ?>
         clearImageBtn.classList.remove('d-none');
     }
 
-    // Drag and drop prevent default
     ['dragover', 'dragleave', 'drop'].forEach(eventName => {
         dropArea.addEventListener(eventName, e => e.preventDefault());
     });
 
-    // Style saat drag over
     dropArea.addEventListener('dragover', () => {
         dropArea.classList.add('bg-primary-soft');
         dropArea.style.borderColor = '#0ea5e9';
@@ -193,7 +191,6 @@ unset($__errorArgs, $__bag); ?>
         dropArea.style.borderColor = 'transparent';
     });
 
-    // Handle File
     function handleFileSelect() {
         const file = gambarInput.files[0];
         if (file && file.type.startsWith('image/')) {
@@ -228,14 +225,12 @@ unset($__errorArgs, $__bag); ?>
     });
 
     ketInput.addEventListener('input', () => {
-        // Enforce 255 character limit
         if (ketInput.value.length > 255) {
             ketInput.value = ketInput.value.substring(0, 255);
         }
         charCountSpan.textContent = ketInput.value.length + ' / 255';
     });
 
-    // Prevent form submission if content exceeds 255 chars
     document.querySelector('form').addEventListener('submit', function(e) {
         const ketValue = ketInput.value.trim();
         if (ketValue.length > 255) {
@@ -245,6 +240,7 @@ unset($__errorArgs, $__bag); ?>
         }
     });
 </script>
+<?php $__env->stopPush(); ?>
 
 <?php $__env->stopSection(); ?>
 <?php echo $__env->make('layout.main', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\laragon\www\UKK_Aspira\resources\views/siswa/pengaduan/edit.blade.php ENDPATH**/ ?>

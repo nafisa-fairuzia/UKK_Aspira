@@ -13,9 +13,16 @@ return new class extends Migration
     {
         Schema::create('siswa', function (Blueprint $table) {
             $table->integer('nis')->primary();
-            $table->string('nama', 100);     
-            $table->string('kelas', 10);
+            $table->string('nama', 100);
+            $table->string('username')->nullable()->unique();
+            $table->string('password')->nullable();
+            $table->unsignedBigInteger('id_kelas');
+            $table->string('profile_pic')->nullable();
             $table->timestamps();
+            $table->foreign('id_kelas')
+                ->references('id')
+                ->on('kelas')
+                ->onDelete('cascade');
         });
     }
 

@@ -20,7 +20,6 @@ return new class extends Migration
             $table->unsignedBigInteger('id_pengaduan')->nullable();
             $table->boolean('dibaca')->default(false);
             $table->timestamps();
-
             $table->foreign('id_pengaduan')
                 ->references('id_pelaporan')
                 ->on('input_aspirasi')
@@ -33,6 +32,8 @@ return new class extends Migration
      */
     public function down(): void
     {
+        Schema::disableForeignKeyConstraints();
         Schema::dropIfExists('notifikasi');
+        Schema::enableForeignKeyConstraints();
     }
 };

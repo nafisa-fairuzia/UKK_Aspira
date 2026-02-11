@@ -4,12 +4,33 @@
 
 @push('styles')
 <link rel="stylesheet" href="{{ asset('assets/css/siswa/dashboard.css') }}?v={{ time() }}">
+<style>
+    :root {
+        --stat-color-default: #0ea5e9;
+    }
+
+    .stat-color {
+        color: var(--stat-color);
+    }
+
+    .bg-color {
+        background-color: var(--bg-color);
+    }
+
+    .timeline-dot {
+        background-color: var(--timeline-color);
+    }
+
+    .timeline-icon {
+        color: var(--timeline-color);
+    }
+</style>
 @endpush
 
 @section('content')
 <div class="siswa-dashboard ">
     <main id="main-content" class="py-4">
-        <div class="card welcome-card mb-4 border-0 shadow-lg position-relative overflow-hidden rounded-4 ">
+        <div class="card welcome-card mb-4 mt-4 border-0 shadow-lg position-relative overflow-hidden rounded-4 ">
             <div class="card-body p-4 p-md-5">
                 <div class="row align-items-center position-relative" style="z-index: 2;">
                     <div class="col-md-7 text-white">
@@ -24,7 +45,7 @@
                         <div class="d-flex gap-2">
                             <a href="{{ route('siswa.pengaduan.create') }}"
                                 class="btn btn-light rounded-pill px-4 fw-bold shadow-sm">
-                                <i class="ti ti-plus me-1"></i> Buat Laporan
+                                <i class="ti ti-plus me-1"></i> Buat Pengaduan
                             </a>
                             <button class="btn btn-outline-light rounded-pill px-4" data-bs-toggle="modal" data-bs-target="#modalPanduan">
                                 Panduan
@@ -36,7 +57,7 @@
                 <div class="decoration-circle-1"></div>
                 <div class="decoration-circle-2"></div>
                 <img src="{{ asset('assets/img/aspira5.png') }}"
-                    class="welcome-img d-none d-md-block"
+                    class="welcome-img"
                     alt="Illustration">
             </div>
         </div>
@@ -49,53 +70,60 @@
             'val' => $total,
             'icon' => 'ti-folder',
             'bg' => 'info',
-            'color' => '#0ea5e9'
+            'color' => '#0ea5e9',
+            'status' => null
             ],
             [
             'label' => 'Menunggu',
             'val' => $menunggu,
             'icon' => 'ti-clock-pause',
             'bg' => 'warning',
-            'color' => '#f59e0b'
+            'color' => '#f59e0b',
+            'status' => 'Menunggu'
             ],
             [
             'label' => 'Proses',
             'val' => $proses,
             'icon' => 'ti-settings-automation',
             'bg' => 'primary',
-            'color' => '#0ea5e9'
+            'color' => '#0ea5e9',
+            'status' => 'Proses'
             ],
             [
             'label' => 'Selesai',
             'val' => $selesai,
             'icon' => 'ti-circle-check',
             'bg' => 'success',
-            'color' => '#10b981'
+            'color' => '#10b981',
+            'status' => 'Selesai'
             ],
             ];
             @endphp
 
             @foreach($stats as $st)
-
+            @php
+            $link = $st['status'] ? route('siswa.pengaduan.riwayat', ['status' => $st['status']]) : route('siswa.pengaduan.riwayat');
+            @endphp
             <div class="col-6 col-lg-3">
-                <div class="card border-0 p-4 rounded-4 shadow-sm h-100 card-hover">
-                    <div class="d-flex align-items-center justify-content-between">
-                        <div>
-                            <div class="text-muted small fw-bold text-uppercase">{{ $st['label'] }}</div>
-                            <h2 class="fw-bold mb-0 mt-1" style="color: <?php echo $st['color']; ?>;">
-                                {{ $st['val'] }}
-                            </h2>
-                        </div>
-                        <div class="flex-shrink-0">
-                            <div class="bg-{{ $st['bg'] }} bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width: 55px; height: 55px;">
-                                <i class="ti {{ $st['icon'] }} fs-3" style="color: <?php echo $st['color']; ?>;"></i>
+                <a href="{{ $link }}" class="text-decoration-none text-reset d-block" title="Lihat {{ $st['label'] }}">
+                    <div class="card border-0 p-4 rounded-4 shadow-sm h-100 card-hover" style="cursor: pointer;">
+                        <div class="d-flex align-items-center justify-content-between">
+                            <div>
+                                <div class="text-muted small fw-bold text-uppercase">{{ $st['label'] }}</div>
+                                <h2 class="fw-bold mb-0 mt-1" style="color: <?php echo $st['color']; ?>;">
+                                    {{ $st['val'] }}
+                                </h2>
+                            </div>
+                            <div class="flex-shrink-0">
+                                <div class="bg-{{ $st['bg'] }} bg-opacity-10 rounded-circle d-flex align-items-center justify-content-center" style="width: 55px; height: 55px;">
+                                    <i class="ti {{ $st['icon'] }} fs-3" style="color: <?php echo $st['color']; ?>;"></i>
+                                </div>
                             </div>
                         </div>
                     </div>
-                </div>
+                </a>
             </div>
             @endforeach
-
         </div>
 
         <div class="row g-4 mt-2">
@@ -108,42 +136,55 @@
                 <div class="timeline">
                     @forelse($riwayat->take(3) as $item)
                     @php
-                    // Simpan variabel di PHP agar atribut style di HTML bersih (bebas error VS Code)
-                    $st = strtolower($item->status ?? 'menunggu');
-                    $color = '#f59e0b';
-                    $bgSubtle = 'bg-warning-subtle';
+
+                    $st = strtolower($item->aspirasi->status ?? 'menunggu');
 
                     if($st == 'selesai') {
                     $color = '#10b981';
                     $bgSubtle = 'bg-success-subtle';
+                    $iconStatus = 'ti-circle-check';
                     } elseif($st == 'proses') {
                     $color = '#0ea5e9';
                     $bgSubtle = 'bg-info-subtle';
+                    $iconStatus = 'ti-settings-automation';
+                    } else {
+                    $color = '#f59e0b';
+                    $bgSubtle = 'bg-warning-subtle';
+                    $iconStatus = 'ti-clock-pause';
                     }
                     @endphp
+
                     <div class="timeline-item d-flex gap-3 mb-3">
                         <div class="timeline-status d-flex flex-column align-items-center">
-                            <div class="dot shadow-sm" style="background-color: {{ $color }};"></div>
-                            <div class="line"></div>
+                            {{-- Dot Timeline --}}
+                            <div class="dot shadow-sm" style="background-color: <?= $color ?>; width: 12px; height: 12px; border-radius: 50%;"></div>
+                            <div class="line" style="width: 2px; background-color: #e9ecef; flex-grow: 1; margin: 4px 0;"></div>
                         </div>
 
                         <div class="card border-0 shadow-sm rounded-4 w-100 stat-hover">
                             <div class="card-body p-3">
                                 <div class="d-flex justify-content-between align-items-center">
                                     <div class="d-flex align-items-center gap-3">
+                                        {{-- Box Ikon: Sekarang ikonnya berwarna sesuai status --}}
                                         <div class="p-2 rounded-3 {{ $bgSubtle }} d-flex align-items-center justify-content-center" style="width: 45px; height: 45px;">
-                                            <i class="ti ti-notes fs-4" style="color: {{ $color }};"></i>
+                                            <i class="ti {{ $iconStatus }} fs-4" style="color: <?= $color ?>;"></i>
                                         </div>
+
                                         <div>
-                                            <h6 class="fw-bold mb-1 text-dark small">{{ $item->kategori->nama_kategori ?? 'Umum' }}</h6>
+                                            {{-- Teks Judul: Diubah dari text-dark menjadi berwarna sesuai status --}}
+                                            <h6 class="fw-bold mb-1 small" style="color: <?= $color ?>;">
+                                                {{ $item->kategori->ket_kategori ?? 'Umum' }}
+                                            </h6>
                                             <p class="text-muted small mb-0">{{ Str::limit($item->lokasi, 30) }}</p>
                                         </div>
                                     </div>
+
                                     <div class="text-end">
                                         <span class="badge {{ $bgSubtle }} text-dark opacity-75 rounded-pill mb-1" style="font-size: 10px;">
                                             {{ $item->created_at->diffForHumans() }}
                                         </span>
-                                        <a href="{{ route('siswa.pengaduan.show', $item->id_pelaporan) }}" class="d-block text-primary fw-bold small text-decoration-none">
+                                        {{-- Link Lihat juga mengikuti warna --}}
+                                        <a href="{{ route('siswa.pengaduan.show', $item->id_pelaporan) }}" class="d-block fw-bold small text-decoration-none" style="color: <?= $color ?>;">
                                             Lihat <i class="ti ti-arrow-right"></i>
                                         </a>
                                     </div>
@@ -153,7 +194,7 @@
                     </div>
                     @empty
                     <div class="card border-0 shadow-sm rounded-4 w-100 p-5 text-center">
-                        <p class="text-muted small mb-0">Belum ada aktivitas laporan.</p>
+                        <p class="text-muted small mb-0">Belum ada aktivitas pengaduan.</p>
                     </div>
                     @endforelse
                 </div>
@@ -163,7 +204,7 @@
                 <h5 class="fw-bold mb-3 text-dark">Jam Operasional</h5>
 
                 <div class="card border-0 shadow-sm rounded-4 overflow-hidden mb-4">
-                    <div class="card-body p-0">
+                    <div class=" p-0">
                         <div class="p-4 text-white" style="background: var(--gradient);">
                             <div class="d-flex align-items-center gap-3">
                                 <div class="bg-white bg-opacity-25 rounded-circle d-flex align-items-center justify-content-center" style="width: 50px; height: 50px;">
@@ -179,7 +220,7 @@
                         <div class="p-4">
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <span class="text-muted small fw-bold">JAM KERJA</span>
-                                <span class="badge bg-primary-subtle text-primary rounded-pill">07:00 - 15:30</span>
+                                <span class="badge bg-primary-subtle text-primary rounded-pill">07:00 - 15:00</span>
                             </div>
                             <div class="d-flex justify-content-between align-items-center mb-3">
                                 <span class="text-muted small fw-bold">ISTIRAHAT</span>
@@ -188,15 +229,14 @@
                             <hr class="opacity-50">
                             <div class="d-flex align-items-center gap-2 text-success">
                                 <i class="ti ti-circle-check"></i>
-                                <span class="small fw-bold">Sistem Menerima Laporan 24 Jam</span>
+                                <span class="small fw-bold">Sistem Menerima Pengaduan 24 Jam</span>
                             </div>
                             <p class="x-small text-muted mt-2 mb-0">
-                                *Laporan yang masuk di luar jam kerja akan diproses pada hari kerja berikutnya.
+                                *Pengaduan yang masuk di luar jam kerja akan diproses pada hari kerja berikutnya.
                             </p>
                         </div>
                     </div>
                 </div>
-
 
             </div>
 
@@ -219,7 +259,7 @@
                                 <i class="ti ti-edit fs-2"></i>
                             </div>
                             <h6 class="fw-bold">1. Isi Form</h6>
-                            <p class="small text-muted mb-0">Klik tombol "Buat Laporan" dan jelaskan detail kerusakan fasilitas.</p>
+                            <p class="small text-muted mb-0">Klik tombol "Buat Pengaduan " dan jelaskan detail kerusakan fasilitas.</p>
                         </div>
                     </div>
                     <div class="col-md-4">
@@ -237,7 +277,7 @@
                                 <i class="ti ti-refresh fs-2"></i>
                             </div>
                             <h6 class="fw-bold">3. Pantau Progres</h6>
-                            <p class="small text-muted mb-0">Cek status laporanmu di dashboard secara berkala hingga selesai.</p>
+                            <p class="small text-muted mb-0">Cek status Pengaduanmu di dashboard secara berkala hingga selesai.</p>
                         </div>
                     </div>
                 </div>
@@ -247,7 +287,7 @@
                 <div class="alert alert-info border-0 rounded-3 d-flex align-items-center">
                     <i class="ti ti-alert-circle fs-4 me-3"></i>
                     <div class="small">
-                        <strong>Catatan:</strong> Laporan yang masuk akan diverifikasi oleh Admin maksimal 1x24 jam pada hari kerja.
+                        <strong>Catatan:</strong> Pengaduan yang masuk akan diverifikasi oleh Admin maksimal 1x24 jam pada hari kerja.
                     </div>
                 </div>
             </div>
