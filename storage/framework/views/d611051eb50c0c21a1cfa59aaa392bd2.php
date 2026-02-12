@@ -244,7 +244,7 @@ unset($__errorArgs, $__bag); ?>
                         </a>
                     </div>
                 </div>
-            </div> 
+            </div>
         </div> 
     </main>
 </div>

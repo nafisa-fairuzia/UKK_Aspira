@@ -83,7 +83,7 @@
                             <div class="mb-4">
                                 <label class="small fw-bold text-uppercase text-muted d-block mb-2">Deskripsi</label>
                                 <div class="bg-light p-4 rounded-3" style="border-left: 4px solid #0d6efd;">
-                                    <p class="mb-0 text-dark" style="white-space: pre-line; font-size: 0.97rem; line-height:1.6;">
+                                    <p class="mb-0 text-dark">
                                         {{ $aspirasi->ket }}
                                     </p>
                                 </div>

@@ -37,14 +37,12 @@
             </div>
 
             <div class="row g-4">
-                <!-- Main Content -->
                 <div class="col-lg-8">
-                    <!-- Status Timeline Card -->
                     <div class="card border-0 shadow-sm mb-4 overflow-hidden">
                         <div class="card-body p-4">
                             <div class="row position-relative">
                                 <?php
-                                // Timeline configuration - simple array mapping
+
                                 $timeline = [
                                 'Menunggu' => ['icon' => 'ti-clock', 'title' => 'Menunggu'],
                                 'Proses' => ['icon' => 'ti-settings', 'title' => 'Diproses'],
@@ -69,7 +67,6 @@
                         </div>
                     </div>
 
-                    <!-- Pengaduan Details Card -->
                     <div class="card border-0 shadow-sm mb-4">
                         <div class="card-header bg-white py-3 border-bottom border-light">
                             <div class="d-flex align-items-center">
@@ -78,24 +75,21 @@
                             </div>
                         </div>
                         <div class="card-body p-4">
-                            <!-- Location -->
                             <div class="mb-4">
                                 <label class="text-muted small text-uppercase fw-bold mb-2 d-block">Lokasi Kejadian</label>
                                 <p class="fw-bold text-dark"><i class="ti ti-map-pin me-1 text-primary"></i> <?php echo e($aspirasi->lokasi); ?></p>
                             </div>
 
-                            <!-- Description -->
                             <div class="mb-4">
                                 <label class="small fw-bold text-uppercase text-muted d-block mb-2">Deskripsi</label>
                                 <div class="bg-light p-4 rounded-3" style="border-left: 4px solid #0d6efd;">
-                                    <p class="mb-0 text-dark" style="white-space: pre-line; font-size: 0.97rem; line-height:1.6;">
+                                    <p class="mb-0 text-dark">
                                         <?php echo e($aspirasi->ket); ?>
 
                                     </p>
                                 </div>
                             </div>
 
-                            <!-- Attachment -->
                             <?php if($aspirasi->gambar): ?>
                             <div class="attachment-box mt-4">
                                 <label class="small fw-bold text-muted text-uppercase d-block mb-3">Dokumentasi Terlampir</label>
@@ -109,10 +103,8 @@
                     </div>
                 </div>
 
-                <!-- Sidebar: Response & Info -->
                 <div class="col-lg-4">
                     <div class="sticky-wrapper">
-                        <!-- Response from Admin -->
                         <div class="card border-0 shadow-sm mb-4 overflow-hidden">
                             <div class="card-header bg-primary text-white py-3 border-0">
                                 <div class="d-flex align-items-center">
@@ -138,7 +130,6 @@
                             </div>
                         </div>
 
-                        <!-- Report Info Card -->
                         <div class="card border-0 shadow-sm">
                             <div class="card-body p-4">
                                 <label class="text-muted small text-uppercase fw-bold mb-3 d-block">Informasi Pengaduan</label>
@@ -163,7 +154,6 @@
                             </div>
                         </div>
 
-                        <!-- Back Button -->
                         <a href="<?php echo e(route('siswa.pengaduan.riwayat')); ?>" class="btn btn-outline-primary mt-4 w-100 fw-bold rounded-3">
                             <i class="ti ti-arrow-left me-1"></i> Kembali
                         </a>
@@ -172,7 +162,6 @@
             </div>
         </div>
     </main>
-
 
     <div class="modal fade" id="cancelModal" tabindex="-1">
         <div class="modal-dialog modal-dialog-centered modal-sm">
@@ -195,11 +184,7 @@
         </div>
     </div>
 
-    <script>
-        function confirmCancel() {
-            new bootstrap.Modal(document.getElementById('cancelModal')).show();
-        }
-    </script>
+    <script src="<?php echo e(asset('assets/js/siswa/pengaduan-show.js')); ?>?v=<?php echo e(time()); ?>"></script>
 
 </div>
 

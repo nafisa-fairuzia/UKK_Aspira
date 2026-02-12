@@ -25,6 +25,27 @@
                     ];
                 }
 
+                // If table has no real data rows (only an empty-state row with colspan), skip initializing DataTables
+                const tbodyRows = tbl.querySelectorAll('tbody tr');
+                let hasRealData = false;
+                if (tbodyRows.length > 0) {
+                    if (tbodyRows.length === 1) {
+                        const tdCount = tbodyRows[0].querySelectorAll('td').length;
+                        const firstTd = tbodyRows[0].querySelector('td');
+                        const colspan = firstTd ? parseInt(firstTd.getAttribute('colspan') || '0', 10) : 0;
+                        if (!(tdCount === 1 && colspan > 0)) {
+                            hasRealData = true;
+                        }
+                    } else {
+                        hasRealData = true;
+                    }
+                }
+
+                if (!hasRealData) {
+                    // do not initialize DataTables for empty tables to avoid column-count errors
+                    return;
+                }
+
                 const $tbl = $(selector).DataTable(config);
 
                 if (!skipSearchBox.includes(selector)) {

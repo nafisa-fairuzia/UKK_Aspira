@@ -164,7 +164,6 @@
         </div>
     </main>
 
-    <!-- Single dynamic modal for Add/Edit Kategori -->
     <div class="modal fade" id="kategoriModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered" style="max-width: 400px;">
             <div class="modal-content border-0 shadow rounded-3">
@@ -218,7 +217,6 @@ unset($__errorArgs, $__bag); ?>
 
 <?php $__env->startPush('scripts'); ?>
 <script>
-    // Set route URL untuk kategori management
     window.routeAdminKategoriStore = "<?php echo e(route('admin.kategori.store')); ?>";
 </script>
 <script src="<?php echo e(asset('assets/js/admin/kategori-management.js')); ?>?v=<?php echo e(time()); ?>"></script>

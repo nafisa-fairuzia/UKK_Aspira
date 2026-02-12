@@ -241,3 +241,7 @@
 </div>
 
 @endsection
+
+@push('scripts')
+<script src="{{ asset('assets/js/admin/pengaduan-index.js') }}?v={{ time() }}"></script>
+@endpush

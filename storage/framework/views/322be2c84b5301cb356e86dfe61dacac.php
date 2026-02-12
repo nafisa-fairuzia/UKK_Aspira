@@ -159,7 +159,6 @@
         </div>
     </main>
 
-    <!-- Single dynamic modal untuk Tambah/Edit Siswa -->
     <div class="modal fade" id="siswaModal" tabindex="-1" aria-hidden="true">
         <div class="modal-dialog modal-dialog-centered">
             <div class="modal-content border-0 shadow" style="border-radius: 20px;">
@@ -318,7 +317,6 @@ unset($__errorArgs, $__bag); ?>
 
     <?php $__env->startPush('scripts'); ?>
     <script>
-        // Set route URL untuk sidebar management
         window.routeAdminSiswaStore = "<?php echo e(route('admin.siswa.store')); ?>";
         window.apiKelasSearch = "<?php echo e(route('api.kelas.search')); ?>";
     </script>

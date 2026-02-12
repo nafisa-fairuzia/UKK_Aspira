@@ -42,7 +42,8 @@ class PengaduanController extends Controller
         }
 
         if ($request->filled('kategori')) {
-            $query->where('id_kategori', $request->kategori);
+            // specify table to avoid ambiguous column when joining aspirasi
+            $query->where('input_aspirasi.id_kategori', $request->kategori);
         }
 
         if ($request->filled('siswa')) {
@@ -166,7 +167,8 @@ class PengaduanController extends Controller
         }
 
         if ($request->filled('kategori')) {
-            $query->where('id_kategori', $request->kategori);
+            // specify table to avoid ambiguous column when joining aspirasi
+            $query->where('input_aspirasi.id_kategori', $request->kategori);
         }
 
         if ($request->filled('siswa')) {

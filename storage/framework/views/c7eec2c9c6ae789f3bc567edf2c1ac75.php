@@ -252,7 +252,6 @@
 <?php $__env->startPush('scripts'); ?>
 <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
 <script>
-    // Pass data dari Blade ke JavaScript
     window.chartLabels = JSON.parse('<?php echo json_encode($chart_labels); ?>');
     window.chartData = JSON.parse('<?php echo json_encode($chart_data); ?>');
 </script>

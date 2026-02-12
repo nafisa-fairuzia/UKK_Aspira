@@ -280,7 +280,6 @@ unset($__errorArgs, $__bag); ?>
 
 <?php $__env->startPush('scripts'); ?>
 <script>
-    // Set route URL untuk admin management
     window.routeAdminAdminsStore = "<?php echo e(route('admin.admins.store')); ?>";
 </script>
 <script src="<?php echo e(asset('assets/js/admin/admins-management.js')); ?>?v=<?php echo e(time()); ?>"></script>

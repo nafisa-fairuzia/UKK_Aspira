@@ -12,6 +12,10 @@
         rel="stylesheet">
     <link href="https://cdn.jsdelivr.net/npm/@tabler/icons-webfont@latest/tabler-icons.min.css" rel="stylesheet">
     <link rel="stylesheet" href="https://cdn.datatables.net/1.13.6/css/dataTables.bootstrap5.min.css">
+    <link rel="icon" type="image/png" href="{{ asset('assets/img/logo_aspira1.png') }}?v={{ time() }}" sizes="32x32">
+    <link rel="icon" type="image/png" href="{{ asset('assets/img/logo_aspira1.png') }}?v={{ time() }}" sizes="16x16">
+    <link rel="shortcut icon" href="{{ asset('assets/img/logo_aspira1.png') }}?v={{ time() }}">
+    <link rel="apple-touch-icon" href="{{ asset('assets/img/logo_aspira1.png') }}?v={{ time() }}">
     <link rel="stylesheet" href="{{ asset('assets/css/global.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/modal.css') }}">
     <link rel="stylesheet" href="{{ asset('assets/css/admin/dashboard.css') }}">
@@ -39,8 +43,6 @@
 
     <script src="{{ asset('assets/js/layout.js') }}"></script>
     <script src="{{ asset('assets/js/data_tables.js') }}"></script>
-    <script src="{{ asset('assets/js/admin.js') }}"></script>
-    <script src="{{ asset('assets/js/siswa.js') }}"></script>
     <script src="{{ asset('assets/js/login.js') }}"></script>
 
     <script>

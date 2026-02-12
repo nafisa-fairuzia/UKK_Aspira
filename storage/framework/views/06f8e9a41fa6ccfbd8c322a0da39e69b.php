@@ -303,4 +303,8 @@
 </div>
 
 <?php $__env->stopSection(); ?>
+
+<?php $__env->startPush('scripts'); ?>
+<script src="<?php echo e(asset('assets/js/admin/pengaduan-index.js')); ?>?v=<?php echo e(time()); ?>"></script>
+<?php $__env->stopPush(); ?>
 <?php echo $__env->make('layout.main', array_diff_key(get_defined_vars(), ['__data' => 1, '__path' => 1]))->render(); ?><?php /**PATH C:\laragon\www\UKK_Aspira\resources\views/admin/pengaduan/index.blade.php ENDPATH**/ ?>

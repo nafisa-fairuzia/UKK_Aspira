@@ -6,126 +6,120 @@
     <title>Laporan ASPIRA</title>
     <style>
         @page {
-            margin: 1cm;
+            margin: 1.2cm;
             size: A4 landscape;
         }
 
         body {
-            font-family: 'Arial', sans-serif;
-            color: #333;
-            font-size: 9pt;
+            font-family: 'Helvetica', 'Arial', sans-serif;
+            color: #334155;
+            font-size: 8.5pt;
+            line-height: 1.5;
             margin: 0;
         }
 
-        /* Judul Simpel */
-        .title {
+        .header-container {
             text-align: center;
-            font-size: 16pt;
-            font-weight: bold;
-            margin-bottom: 20px;
-            text-transform: uppercase;
-            border-bottom: 2px solid #333;
-            padding-bottom: 10px;
+            margin-bottom: 25px;
+            border-bottom: 2px solid #1e293b;
+            padding-bottom: 15px;
         }
 
-        /* Tabel Minimalis */
+        .title {
+            font-size: 18pt;
+            font-weight: bold;
+            color: #1e293b;
+            margin: 0;
+        }
+
+        .subtitle {
+            font-size: 9pt;
+            color: #64748b;
+            margin-top: 3px;
+        }
+
         table {
             width: 100%;
             border-collapse: collapse;
-            table-layout: fixed;
+            /* Jangan pakai table-layout: fixed agar kolom bisa menyusut maksimal */
+            background-color: #fff;
         }
 
         th {
-            background-color: #f2f2f2;
-            border: 1px solid #999;
+            background-color: #f8fafc;
+            color: #1e293b;
+            border: 1px solid #cbd5e1;
             padding: 8px 4px;
             font-weight: bold;
-            text-align: center;
+            text-transform: uppercase;
+            font-size: 7.5pt;
         }
 
         td {
-            border: 1px solid #ccc;
-            padding: 6px 4px;
-            vertical-align: middle;
+            border: 1px solid #e2e8f0;
+            padding: 8px 6px;
+            vertical-align: top;
             word-wrap: break-word;
         }
 
-        /* Lebar Kolom Diatur Ketat */
         .col-no {
-            width: 25px;
+            width: 3%; 
+            white-space: nowrap; 
             text-align: center;
+            color: #94a3b8;
+            padding-left: 5px;
+            padding-right: 5px;
         }
 
-        .col-nama {
-            width: 120px;
-        }
+        .col-nama { width: 150px; }
+        .col-tgl { width: 80px; text-align: center; }
+        .col-kat { width: 110px; }
+        .col-lok { width: 110px; }
+        .col-foto { width: 100px; text-align: center; }
+        .col-status { width: 90px; text-align: center; }
 
-        .col-tgl {
-            width: 70px;
-            text-align: center;
-        }
-
-        .col-kat {
-            width: 90px;
-        }
-
-        .col-lok {
-            width: 90px;
-        }
-
-        .col-foto {
-            width: 90px;
-            text-align: center;
-        }
-
-        .col-status {
-            width: 70px;
-            text-align: center;
-        }
-
-        .text-bold {
-            font-weight: bold;
-        }
+        .text-bold { font-weight: bold; color: #0f172a; display: block; }
+        .text-muted { font-size: 7.5pt; color: #64748b; margin-top: 2px; }
 
         .img-bukti {
             max-width: 80px;
             max-height: 60px;
-            border-radius: 2px;
+            border: 1px solid #e2e8f0;
+            padding: 2px;
+            border-radius: 3px;
         }
 
-        .status-text {
+        .status-label {
             font-weight: bold;
-            font-size: 8pt;
-        }
-
-        .info-header {
-            margin-bottom: 10px;
-            width: 100%;
+            font-size: 7.5pt;
         }
     </style>
 </head>
 
 <body>
 
-    <div class="title">LAPORAN REKAPITULASI</div>
+    <div class="header-container">
+        <div class="title">LAPORAN REKAPITULASI PENGADUAN</div>
+        <div class="subtitle">Sistem Pengaduan Sarana dan Prasarana Sekolah</div>
+    </div>
 
-    <table class="info-header" style="border: none; margin-bottom: 15px;">
+    <table style="width: 100%; margin-bottom: 10px; font-size: 8pt;">
         <tr>
-            <td style="border: none; padding: 0;">Status: <strong>{{ strtoupper($status ?? 'SEMUA') }}</strong></td>
-            <td style="border: none; padding: 0; text-align: right;">Tanggal Cetak: {{ now()->format('d/m/Y') }}</td>
+            <td>FILTER STATUS: <strong>{{ strtoupper($status ?? 'SEMUA DATA') }}</strong></td>
+            <td style="text-align: right; color: #64748b;">Dicetak: {{ now()->translatedFormat('d/m/Y H:i') }}</td>
         </tr>
     </table>
 
     <table>
         <thead>
             <tr>
-                <th class="col-no">No</th>
-                <th class="col-nama">Pelapor</th>
+                <th class="col-no">NO</th>
+                <th class="col-nama">Identitas Pelapor</th>
                 <th class="col-tgl">Tanggal</th>
                 <th class="col-kat">Kategori</th>
                 <th class="col-lok">Lokasi</th>
-                <th>Deskripsi</th>
-                <th class="col-foto">Bukti</th>
+                <th class="col-deskripsi text-center">Deskripsi Laporan</th>
+                <th class="col-foto">Lampiran</th>
                 <th class="col-status">Status</th>
             </tr>
         </thead>
@@ -134,70 +128,43 @@
             <tr>
                 <td class="col-no">{{ $loop->iteration }}</td>
                 <td>
-                    <div class="text-bold">{{ optional($p->siswa)->nama ?? '-' }}</div>
-                    <div style="font-size: 8pt; color: #666;">{{ optional(optional($p->siswa)->kelas)->nama_kelas ?? '-' }}</div>
+                    <span class="text-bold">{{ optional($p->siswa)->nama ?? '-' }}</span>
+                    <span class="text-muted">{{ optional(optional($p->siswa)->kelas)->nama_kelas ?? '-' }}</span>
                 </td>
-                <td class="col-tgl">{{ optional($p->created_at)->format('d/m/Y') }}</td>
+                <td style="text-align: center;">{{ optional($p->created_at)->format('d/m/Y') }}</td>
                 <td>{{ optional($p->kategori)->ket_kategori ?? '-' }}</td>
                 <td>{{ $p->lokasi ?? '-' }}</td>
-                <td style="font-size: 8.5pt;">{{ $p->ket ?? '-' }}</td>
+                <td class="col-deskripsi">{{ $p->ket ?? '-' }}</td>
                 <td class="col-foto">
                     @php
-                    $imgHtml = '<span style="color: #ccc;">-</span>';
+                    $imgHtml = '-';
                     if (!empty($p->gambar)) {
-                    // possible locations for the image
-                    $possible = [
-                    public_path('storage/aspirasi/' . $p->gambar),
-                    storage_path('app/public/aspirasi/' . $p->gambar),
-                    storage_path('app/aspirasi/' . $p->gambar)
-                    ];
-
-                    $found = null;
-                    foreach ($possible as $candidate) {
-                    if ($candidate && file_exists($candidate)) {
-                    $found = $candidate;
-                    break;
-                    }
-                    }
-
-                    if ($found) {
-                    try {
-                    $fileContents = file_get_contents($found);
-                    $finfo = finfo_open(FILEINFO_MIME_TYPE);
-                    $mime = finfo_file($finfo, $found) ?: 'image/jpeg';
-                    finfo_close($finfo);
-                    $base64 = base64_encode($fileContents);
-                    $imgHtml = '<img src="data:'.$mime.';base64,'.$base64.'" class="img-bukti">';
-                    } catch (\Exception $e) {
-                    // fallback: show placeholder
-                    $imgHtml = '<span style="color: #ccc;">-</span>';
-                    }
-                    }
+                        $fileName = basename($p->gambar);
+                        $path = storage_path('app/public/aspirasi/' . $fileName);
+                        if (file_exists($path)) {
+                            $mime = @mime_content_type($path) ?: 'image/jpeg';
+                            $base64 = base64_encode(file_get_contents($path));
+                            $imgHtml = '<img src="data:'.$mime.';base64,'.$base64.'" class="img-bukti">';
+                        }
                     }
                     @endphp
                     {!! $imgHtml !!}
                 </td>
                 <td class="col-status">
                     @php
-                    $status = optional($p->aspirasi)->status ?? ($p->status ?? 'Menunggu');
-                    $color = ($status == 'Selesai') ? '#10b981' : (($status == 'Proses') ? '#0ea5e9' : '#f59e0b');
+                        $st = strtoupper(optional($p->aspirasi)->status ?? ($p->status ?? 'Menunggu'));
+                        $color = ($st == 'SELESAI') ? '#10b981' : (($st == 'PROSES') ? '#3b82f6' : '#f59e0b');
                     @endphp
-                    <span class="status-text" style="color: {{ $color }};">{{ strtoupper($status) }}</span>
+                    <span class="status-label" style="color: {{ $color }};">
+                        {{ $st }}
+                    </span>
                 </td>
             </tr>
             @empty
-            <tr>
-                <td colspan="8" style="text-align: center; padding: 20px;">Data Tidak Ditemukan</td>
-            </tr>
+            <tr><td colspan="8" style="text-align:center; padding:30px;">Tidak ada data</td></tr>
             @endforelse
         </tbody>
     </table>
-
-    <div style="margin-top: 30px; float: right; width: 200px; text-align: center;">
-        <p>Mengetahui,</p>
-        <div style="height: 50px;"></div>
-        <p><strong>( Admin ASPIRA )</strong></p>
-    </div>
 
 </body>
 

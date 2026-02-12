@@ -129,11 +129,10 @@
         padding: 10px !important;
     }
     .welcome-img {
-        width: 200px;
-        align-items: center;
+        width: 230px;
 
     }
-    .welcome-card .card-body {
+    .siswa-dashboard .welcome-card .card-body {
         padding: 20px 12px 200px !important;
     }
     h4 {

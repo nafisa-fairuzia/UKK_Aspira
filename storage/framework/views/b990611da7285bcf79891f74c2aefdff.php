@@ -28,7 +28,6 @@ foreach ($attributes->all() as $__key => $__value) {
 
 unset($__defined_vars, $__key, $__value); ?>
 
-<!-- Placeholder saat data tidak ada -->
 <tr>
     <td class="text-center py-4 text-muted" colspan="<?php echo e($colspan); ?>">
         <i class="ti <?php echo e($icon); ?> me-2"></i>

@@ -1,182 +1,185 @@
-function validateAdminUsername() {
-    const usernameInput = document.getElementById('admin_username');
-    if (!usernameInput) return;
+(function() {
+  const formErrorCounts = new WeakMap(); 
 
-    usernameInput.addEventListener('blur', async function() {
-        const username = this.value.trim();
-        if (username === '') return;
+  function getCsrfToken() {
+    return document.querySelector('meta[name="csrf-token"]')?.content || '';
+  }
 
-        try {
-            const response = await fetch('/admin/admins/check-username', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
-                },
-                body: JSON.stringify({ username: username })
-            });
+  function setFormHasError(form, delta) {
+    const prev = formErrorCounts.get(form) || 0;
+    const next = Math.max(0, prev + delta);
+    formErrorCounts.set(form, next);
 
-            const data = await response.json();
-            
-            if (data.exists) {
-                usernameInput.classList.add('border-warning');
-                const errorElement = usernameInput.nextElementSibling;
-                if (errorElement && errorElement.classList.contains('text-warning')) {
-                    errorElement.innerHTML = '<i class="ti ti-alert-circle me-1"></i>Username sudah ada';
-                    errorElement.style.display = 'block';
-                }
-            } else {
-                usernameInput.classList.remove('border-warning');
-                const errorElement = usernameInput.nextElementSibling;
-                if (errorElement && errorElement.classList.contains('text-warning')) {
-                    errorElement.style.display = 'none';
-                }
-            }
-        } catch (error) {
-            console.error('Validation error:', error);
-        }
+    const submitButtons = form.querySelectorAll('button[type="submit"], input[type="submit"]');
+    const disabled = next > 0;
+    submitButtons.forEach(btn => {
+      btn.disabled = disabled;
+      if (disabled) {
+        btn.classList.add('disabled');
+        btn.setAttribute('aria-disabled', 'true');
+      } else {
+        btn.classList.remove('disabled');
+        btn.removeAttribute('aria-disabled');
+      }
     });
-}
+  }
 
-function validateKategori() {
-    const ketInput = document.getElementById('ket_kategori_input');
-    if (!ketInput) return;
+  function ensureErrorEl(input) {
+    let el = input.parentElement.querySelector('.text-warning');
+    if (!el) {
+      el = document.createElement('small');
+      el.className = 'text-warning d-block mt-2';
+      input.parentElement.appendChild(el);
+    }
+    return el;
+  }
 
-    ketInput.addEventListener('blur', async function() {
-        const ket = this.value.trim();
-        if (ket === '') return;
+  function clearFieldError(input) {
+    input.classList.remove('border-warning');
+    const el = input.parentElement.querySelector('.text-warning');
+    if (el) el.style.display = 'none';
+  }
 
-        try {
-            const response = await fetch('/admin/kategori/check-duplicate', {
-                method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
-                },
-                body: JSON.stringify({ ket_kategori: ket })
-            });
+  function applyFieldError(input, message) {
+    if (!input) return;
+    input.classList.add('border-warning');
+    const el = ensureErrorEl(input);
+    el.innerHTML = '<i class="ti ti-alert-circle me-1"></i>' + message;
+    el.style.display = 'block';
+  }
 
-            const data = await response.json();
-            
-            if (data.exists) {
-                this.classList.add('border-warning');
-                const errorElement = this.parentElement.querySelector('.text-warning');
-                if (errorElement) {
-                    errorElement.innerHTML = '<i class="ti ti-alert-circle me-1"></i>Data sudah ada';
-                    errorElement.style.display = 'block';
-                }
-            } else {
-                this.classList.remove('border-warning');
-                const errorElement = this.parentElement.querySelector('.text-warning');
-                if (errorElement) {
-                    errorElement.style.display = 'none';
-                }
-            }
-        } catch (error) {
-            console.error('Validation error:', error);
-        }
-    });
-}
+ 
+  function registerUniqueValidator(options) {
+    const input = document.getElementById(options.id);
+    if (!input) return;
 
-function validateSiswa() {
-    const nisInput = document.getElementById('siswaNis');
-    const usernameInput = document.getElementById('siswaUsername');
+    const form = input.closest('form') || document.body;
+    let lastStateIsError = false;
+    let lastCheckedValue = null;
+    let pendingRequestId = 0;
 
-    if (nisInput) {
-        nisInput.addEventListener('blur', validateSiswaNis);
+    function setErrorState(isError, message) {
+      if (isError === lastStateIsError) return;
+      if (isError) {
+        applyFieldError(input, message);
+        setFormHasError(form, 1);
+      } else {
+        clearFieldError(input);
+        setFormHasError(form, -1);
+      }
+      lastStateIsError = isError;
     }
 
-    if (usernameInput) {
-        usernameInput.addEventListener('blur', validateSiswaUsername);
-    }
-}
+    async function doCheck(value) {
+      const v = value.trim();
+      lastCheckedValue = v;
+      if (v === '') {
+        if (lastStateIsError) setErrorState(false);
+        return;
+      }
 
-async function validateSiswaNis() {
-    const nis = this.value.trim();
-    if (nis === '') return;
+      const requestId = ++pendingRequestId;
 
-    try {
-        const response = await fetch('/admin/siswa/check-nis', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
-            },
-            body: JSON.stringify({ nis: nis })
+      try {
+        const body = {};
+        body[options.payloadKey] = v;
+
+        const resp = await fetch(options.url, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            'X-CSRF-TOKEN': getCsrfToken()
+          },
+          body: JSON.stringify(body)
         });
 
-        const data = await response.json();
-        
-        if (data.exists) {
-            this.classList.add('border-warning');
-            const parentCol = this.closest('.col-md-6, .col-12');
-            let errorElement = parentCol.querySelector('.text-warning');
-            
-            if (!errorElement) {
-                errorElement = document.createElement('small');
-                errorElement.className = 'text-warning d-block mt-2';
-                this.parentElement.appendChild(errorElement);
-            }
-            
-            errorElement.innerHTML = '<i class="ti ti-alert-circle me-1"></i>NIS sudah ada';
-            errorElement.style.display = 'block';
-        } else {
-            this.classList.remove('border-warning');
-            const parentCol = this.closest('.col-md-6, .col-12');
-            const errorElement = parentCol.querySelector('.text-warning');
-            if (errorElement) {
-                errorElement.style.display = 'none';
-            }
+        const data = await resp.json();
+
+        if (requestId !== pendingRequestId || input.value.trim() !== v) {
+          return;
         }
-    } catch (error) {
-        console.error('Validation error:', error);
-    }
-}
 
-async function validateSiswaUsername() {
-    const username = this.value.trim();
-    if (username === '') return;
-
-    try {
-        const response = await fetch('/admin/siswa/check-username', {
-            method: 'POST',
-            headers: {
-                'Content-Type': 'application/json',
-                'X-CSRF-TOKEN': document.querySelector('meta[name="csrf-token"]')?.content || ''
-            },
-            body: JSON.stringify({ username: username })
-        });
-
-        const data = await response.json();
-        
-        if (data.exists) {
-            this.classList.add('border-warning');
-            const parentCol = this.closest('.col-md-6, .col-12');
-            let errorElement = parentCol.querySelector('.text-warning');
-            
-            if (!errorElement) {
-                errorElement = document.createElement('small');
-                errorElement.className = 'text-warning d-block mt-2';
-                this.parentElement.appendChild(errorElement);
-            }
-            
-            errorElement.innerHTML = '<i class="ti ti-alert-circle me-1"></i>Username sudah ada';
-            errorElement.style.display = 'block';
+        if (data && data.exists) {
+          setErrorState(true, options.message || 'Data sudah ada');
         } else {
-            this.classList.remove('border-warning');
-            const parentCol = this.closest('.col-md-6, .col-12');
-            const errorElement = parentCol.querySelector('.text-warning');
-            if (errorElement) {
-                errorElement.style.display = 'none';
-            }
+          setErrorState(false);
         }
-    } catch (error) {
-        console.error('Validation error:', error);
+      } catch (e) {
+        console.error('Validation request failed', e);
+      }
     }
-}
 
-document.addEventListener('DOMContentLoaded', function() {
-    validateAdminUsername();
-    validateKategori();
-    validateSiswa();
-});
+    let timer = null;
+    const debounceMs = options.debounceMs || 400;
+    function debouncedCheck() {
+      clearTimeout(timer);
+      timer = setTimeout(() => doCheck(input.value), debounceMs);
+      if (lastStateIsError) {
+        clearFieldError(input);
+      }
+    }
+
+    input.addEventListener('input', debouncedCheck);
+    input.addEventListener('blur', () => doCheck(input.value));
+
+    const modal = input.closest('.modal');
+    if (modal) {
+      modal.addEventListener('shown.bs.modal', () => {
+        if (lastStateIsError) {
+          setFormHasError(form, -1);
+          lastStateIsError = false;
+        }
+        clearFieldError(input);
+        if (input.value && input.value.trim() !== '') {
+          doCheck(input.value);
+        }
+      });
+
+      modal.addEventListener('hidden.bs.modal', () => {
+        if (lastStateIsError) {
+          setFormHasError(form, -1);
+          lastStateIsError = false;
+        }
+        clearFieldError(input);
+      });
+    }
+
+    if (input.value && input.value.trim() !== '') {
+      doCheck(input.value);
+    }
+  }
+
+  document.addEventListener('DOMContentLoaded', function() {
+    registerUniqueValidator({
+      id: 'ket_kategori_input',
+      url: '/admin/kategori/check-duplicate',
+      payloadKey: 'ket_kategori',
+      message: 'Kategori sudah ada',
+      debounceMs: 400
+    });
+
+    registerUniqueValidator({
+      id: 'admin_username',
+      url: '/admin/admins/check-username',
+      payloadKey: 'username',
+      message: 'Username sudah ada',
+      debounceMs: 400
+    });
+
+    registerUniqueValidator({
+      id: 'siswaNis',
+      url: '/admin/siswa/check-nis',
+      payloadKey: 'nis',
+      message: 'NIS sudah ada',
+      debounceMs: 400
+    });
+
+    registerUniqueValidator({
+      id: 'siswaUsername',
+      url: '/admin/siswa/check-username',
+      payloadKey: 'username',
+      message: 'Username sudah ada',
+      debounceMs: 400
+    });
+  });
+})();
