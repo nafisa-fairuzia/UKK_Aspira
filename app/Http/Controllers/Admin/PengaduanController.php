@@ -42,7 +42,6 @@ class PengaduanController extends Controller
         }
 
         if ($request->filled('kategori')) {
-            // specify table to avoid ambiguous column when joining aspirasi
             $query->where('input_aspirasi.id_kategori', $request->kategori);
         }
 
@@ -185,11 +184,11 @@ class PengaduanController extends Controller
         }
 
         if ($request->filled('tanggal')) {
-            $query->whereDate('created_at', $request->tanggal);
+            $query->whereDate('input_aspirasi.created_at', $request->tanggal);
         }
 
         if ($request->filled('bulan')) {
-            $query->whereMonth('created_at', $request->bulan);
+            $query->whereMonth('input_aspirasi.created_at', $request->bulan);
         }
 
         $query->orderByRaw("CASE

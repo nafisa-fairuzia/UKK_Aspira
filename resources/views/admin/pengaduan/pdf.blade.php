@@ -41,7 +41,6 @@
         table {
             width: 100%;
             border-collapse: collapse;
-            /* Jangan pakai table-layout: fixed agar kolom bisa menyusut maksimal */
             background-color: #fff;
         }
 
@@ -62,21 +61,14 @@
             word-wrap: break-word;
         }
 
-        .col-no {
-            width: 3%; 
-            white-space: nowrap; 
-            text-align: center;
-            color: #94a3b8;
-            padding-left: 5px;
-            padding-right: 5px;
-        }
-
-        .col-nama { width: 150px; }
-        .col-tgl { width: 80px; text-align: center; }
-        .col-kat { width: 110px; }
-        .col-lok { width: 110px; }
-        .col-foto { width: 100px; text-align: center; }
-        .col-status { width: 90px; text-align: center; }
+        .col-no { width: 30px; text-align: center; color: #94a3b8; }
+        .col-nama { width: 140px; }
+        .col-tgl { width: 70px; text-align: center; }
+        .col-kat { width: 100px; }
+        .col-lok { width: 100px; }
+        .col-deskripsi { width: auto; }
+        .col-foto { width: 90px; text-align: center; }
+        .col-status { width: 80px; text-align: center; }
 
         .text-bold { font-weight: bold; color: #0f172a; display: block; }
         .text-muted { font-size: 7.5pt; color: #64748b; margin-top: 2px; }
@@ -92,7 +84,13 @@
         .status-label {
             font-weight: bold;
             font-size: 7.5pt;
+            text-transform: uppercase;
         }
+        
+        /* Warna Status */
+        .status-selesai { color: #10b981; }
+        .status-proses { color: #3b82f6; }
+        .status-pending { color: #f59e0b; }
     </style>
 </head>
 
@@ -103,10 +101,12 @@
         <div class="subtitle">Sistem Pengaduan Sarana dan Prasarana Sekolah</div>
     </div>
 
-    <table style="width: 100%; margin-bottom: 10px; font-size: 8pt;">
+    <table style="width: 100%; margin-bottom: 10px; font-size: 8pt; border: none;">
         <tr>
-            <td>FILTER STATUS: <strong>{{ strtoupper($status ?? 'SEMUA DATA') }}</strong></td>
-            <td style="text-align: right; color: #64748b;">Dicetak: {{ now()->translatedFormat('d/m/Y H:i') }}</td>
+            <td style="border: none; padding: 0;">FILTER STATUS: <strong>{{ strtoupper($status ?? 'SEMUA DATA') }}</strong></td>
+            <td style="border: none; padding: 0; text-align: right; color: #64748b;">
+                Dicetak: {{ now()->translatedFormat('d/m/Y H:i') }}
+            </td>
         </tr>
     </table>
 
@@ -118,7 +118,7 @@
                 <th class="col-tgl">Tanggal</th>
                 <th class="col-kat">Kategori</th>
                 <th class="col-lok">Lokasi</th>
-                <th class="col-deskripsi text-center">Deskripsi Laporan</th>
+                <th class="col-deskripsi">Deskripsi Laporan</th>
                 <th class="col-foto">Lampiran</th>
                 <th class="col-status">Status</th>
             </tr>
@@ -134,38 +134,43 @@
                 <td style="text-align: center;">{{ optional($p->created_at)->format('d/m/Y') }}</td>
                 <td>{{ optional($p->kategori)->ket_kategori ?? '-' }}</td>
                 <td>{{ $p->lokasi ?? '-' }}</td>
-                <td class="col-deskripsi">{{ $p->ket ?? '-' }}</td>
+                <td>{{ $p->ket ?? '-' }}</td>
                 <td class="col-foto">
                     @php
-                    $imgHtml = '-';
-                    if (!empty($p->gambar)) {
-                        $fileName = basename($p->gambar);
-                        $path = storage_path('app/public/aspirasi/' . $fileName);
-                        if (file_exists($path)) {
-                            $mime = @mime_content_type($path) ?: 'image/jpeg';
-                            $base64 = base64_encode(file_get_contents($path));
-                            $imgHtml = '<img src="data:'.$mime.';base64,'.$base64.'" class="img-bukti">';
+                        $imgHtml = '-';
+                        if (!empty($p->gambar)) {
+                            $fileName = basename($p->gambar);
+                            $path = storage_path('app/public/aspirasi/' . $fileName);
+                            if (file_exists($path)) {
+                                $mime = @mime_content_type($path) ?: 'image/jpeg';
+                                $base64 = base64_encode(file_get_contents($path));
+                                $imgHtml = '<img src="data:'.$mime.';base64,'.$base64.'" class="img-bukti">';
+                            }
                         }
-                    }
                     @endphp
                     {!! $imgHtml !!}
                 </td>
                 <td class="col-status">
                     @php
                         $st = strtoupper(optional($p->aspirasi)->status ?? ($p->status ?? 'Menunggu'));
-                        $color = ($st == 'SELESAI') ? '#10b981' : (($st == 'PROSES') ? '#3b82f6' : '#f59e0b');
+                        $classStatus = match($st) {
+                            'SELESAI' => 'status-selesai',
+                            'PROSES'  => 'status-proses',
+                            default   => 'status-pending',
+                        };
                     @endphp
-                    <span class="status-label" style="color: {{ $color }};">
+                    <span class="status-label {{ $classStatus }}">
                         {{ $st }}
                     </span>
                 </td>
             </tr>
             @empty
-            <tr><td colspan="8" style="text-align:center; padding:30px;">Tidak ada data</td></tr>
+            <tr>
+                <td colspan="8" style="text-align:center; padding:30px;">Tidak ada data</td>
+            </tr>
             @endforelse
         </tbody>
     </table>
 
 </body>
-
 </html>

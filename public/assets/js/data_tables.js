@@ -1,5 +1,5 @@
     document.addEventListener('DOMContentLoaded', function() {
-            const tableIds = ['#kategoriTable', '#siswaTable', '#adminsTable', '#pengaduanTable'];
+            const tableIds = ['#kategoriTable', '#siswaTable', '#adminsTable', '#pengaduanTable', '#pengaduanTableSiswa'];
             const skipSearchBox = ['#pengaduanTable']; 
 
             tableIds.forEach(function(selector) {
@@ -14,15 +14,18 @@
                     dom: 't'
                 };
 
-                if (selector === '#pengaduanTable') {
+                if (selector === '#pengaduanTable' || selector === '#pengaduanTableSiswa') {
                     config.columnDefs = [
                         { targets: 0, width: '5%' },
-                        { targets: 1, width: '25%' },
+                        { targets: 1, width: '30%' },
                         { targets: 2, width: '15%' },
-                        { targets: 3, width: '20%' },
-                        { targets: 4, width: '20%' },
-                        { targets: 5, width: '15%' }
+                        { targets: 3, width: '30%' },
+                        { targets: 4, width: '10%' },
+                        { targets: 5, width: '10%' }
                     ];
+                    // Keep paging disabled: display all rows and use the custom DataTables search box
+                    config.paging = false;
+                    config.dom = 't';
                 }
 
                 // If table has no real data rows (only an empty-state row with colspan), skip initializing DataTables

@@ -100,8 +100,15 @@ Route::prefix('siswa')->middleware('checklogin')->group(function () {
     Route::get('/pengaduan/riwayat', [SiswaPengaduanController::class, 'riwayat'])
         ->name('siswa.pengaduan.riwayat');
 
+    // Halaman daftar pengaduan siswa lain (mirip admin view)
+    Route::get('/pengaduan/lainnya', [SiswaPengaduanController::class, 'others'])
+        ->name('siswa.pengaduan.lainnya');
+
     Route::get('/pengaduan/{aspirasi}', [SiswaPengaduanController::class, 'show'])
         ->name('siswa.pengaduan.show');
+
+    Route::get('/pengaduan/{aspirasi}/lihat', [SiswaPengaduanController::class, 'showPublic'])
+        ->name('siswa.pengaduan.showPublic');
 
     Route::get('/pengaduan/{aspirasi}/edit', [SiswaPengaduanController::class, 'editForm'])
         ->name('siswa.pengaduan.editForm');

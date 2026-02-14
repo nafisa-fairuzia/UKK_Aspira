@@ -9,6 +9,7 @@ use App\Models\Aspirasi;
 use App\Models\Siswa;
 use App\Models\Notifikasi;
 use Illuminate\Support\Facades\Storage;
+use Illuminate\Support\Facades\DB;
 
 class DashboardSiswaController extends Controller
 {
@@ -57,6 +58,25 @@ class DashboardSiswaController extends Controller
             ->take(5)
             ->get();
 
+        // Ambil 3 pengaduan terbaru dari siswa lain menggunakan stored procedure
+        // Menggunakan stored procedure mempercepat dan mengurangi beban ORM untuk daftar singkat
+        $othersLatest = DB::select('CALL sp_get_latest_pengaduan_others(?, ?)', [3, $nis]);
+
+        // Konversi menjadi array sederhana untuk view (mudah dibaca & di-render di Blade)
+        $othersLatest = array_map(function ($r) {
+            return [
+                'id' => $r->id_pelaporan,
+                'nis' => $r->nis,
+                'nama' => $r->siswa_nama,
+                'kategori' => $r->kategori_nama ?? 'Umum',
+                'lokasi' => $r->lokasi,
+                'deskripsi' => $r->deskripsi,
+                'gambar' => $r->gambar,
+                'status' => $r->status,
+                'created_at' => $r->created_at,
+            ];
+        }, $othersLatest);
+
         $unreadNotifications = Notifikasi::forSiswa()
             ->unread()
             ->latest()
@@ -70,7 +90,8 @@ class DashboardSiswaController extends Controller
             'selesai',
             'terakhir',
             'riwayat',
-            'unreadNotifications'
+            'unreadNotifications',
+            'othersLatest'
         ));
     }
 

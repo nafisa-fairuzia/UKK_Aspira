@@ -127,7 +127,10 @@
             <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); ?>
         </div>
 
+
+
         <div class="row g-4 mt-2">
+
             <div class="col-lg-8">
                 <div class="d-flex align-items-center justify-content-between mb-3">
                     <h5 class="fw-bold mb-0 text-dark">Aktivitas Terbaru</h5>
@@ -242,7 +245,64 @@
                 </div>
 
             </div>
+        </div>
+        <div class="d-flex align-items-center justify-content-between mb-3 mt-4">
+            <h5 class="fw-bold mb-0 text-dark">Pengaduan Siswa Lain</h5>
+            <a href="<?php echo e(route('siswa.pengaduan.lainnya')); ?>" class="btn btn-sm btn-light rounded-pill px-3 fw-bold text-primary">Lihat Semua</a>
+        </div>
 
+        <div class="row g-3 mb-4">
+            <?php $__empty_1 = true; $__currentLoopData = $othersLatest; $__env->addLoop($__currentLoopData); foreach($__currentLoopData as $other): $__env->incrementLoopIndices(); $loop = $__env->getLastLoop(); $__empty_1 = false; ?>
+            <?php
+            $st = strtolower($other['status'] ?? 'menunggu');
+            if($st == 'selesai') { $color = '#10b981'; $bgSubtle = 'bg-success-subtle'; $iconStatus = 'ti-circle-check'; }
+            elseif($st == 'proses') { $color = '#0ea5e9'; $bgSubtle = 'bg-info-subtle'; $iconStatus = 'ti-settings-automation'; }
+            else { $color = '#f59e0b'; $bgSubtle = 'bg-warning-subtle'; $iconStatus = 'ti-clock-pause'; }
+            ?>
+            <div class="col-xl-4 col-md-6">
+                <div class="card border-0 shadow-sm rounded-4 h-100 card-hover">
+                    <div class="card-body p-4">
+                        <?php
+                        $s = $other['status'] ?? 'Menunggu';
+                        $badgeClass = $s === 'Menunggu' ? 'bg-warning-subtle text-warning' : ($s === 'Proses' ? 'bg-primary-subtle text-primary' : ($s === 'Selesai' ? 'bg-success-subtle text-success' : 'bg-light text-secondary'));
+                        ?>
+
+                        <div class="d-flex justify-content-between align-items-start mb-3">
+                            <span class="badge <?php echo e($badgeClass); ?> border-0 px-3 py-2 rounded-pill small fw-bold"><?php echo e(strtoupper($s)); ?></span>
+                            <small class="text-muted fw-medium">ASP-<?php echo e(sprintf('%05d', $other['id'])); ?></small>
+                        </div>
+
+                        <div class="d-flex align-items-center mb-4">
+                            <div class="avatar-box bg-primary-subtle rounded-3 d-flex align-items-center justify-content-center fw-bold me-3 text-primary" style="width:45px; height:45px; font-size:18px;">
+                                <?php echo e(strtoupper(substr($other['nama'] ?? 'S', 0, 1))); ?>
+
+                            </div>
+                            <div>
+                                <h6 class="mb-0 fw-bold"><?php echo e($other['nama'] ?? 'N/A'); ?></h6>
+                                <small class="text-muted">NIS: <?php echo e($other['nis']); ?></small>
+                            </div>
+                        </div>
+
+                        <div class="mb-4">
+                            <label class="text-muted x-small text-uppercase fw-bold mb-1 d-block">Kategori & Waktu</label>
+                            <p class="mb-0 fw-medium text-dark small"><i class="ti ti-tag me-1 text-primary"></i> <?php echo e($other['kategori'] ?? 'Umum'); ?></p>
+                            <p class="mb-0 text-muted x-small"><i class="ti ti-clock me-1"></i> <?php echo e(\Illuminate\Support\Carbon::parse($other['created_at'])->translatedFormat('d M Y H:i')); ?></p>
+                        </div>
+
+                        <p class="small text-secondary mb-3"><?php echo e(Str::limit($other['deskripsi'] ?? $other['lokasi'], 120)); ?></p>
+
+                        <a href="<?php echo e(route('siswa.pengaduan.showPublic', $other['id'])); ?>" class="btn btn-outline-primary btn-sm w-100 rounded-3 py-2 fw-bold">Lihat</a>
+                    </div>
+                </div>
+            </div>
+            <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
+            <div class="col-12">
+                <div class="card border-0 shadow-sm rounded-4 w-100 p-4 text-center">
+                    <p class="text-muted small mb-0">Belum ada pengaduan dari siswa lain.</p>
+                </div>
+            </div>
+            <?php endif; ?>
+        </div>
     </main>
 </div>
 <div class="modal fade" id="modalPanduan" tabindex="-1" aria-labelledby="modalPanduanLabel" aria-hidden="true">

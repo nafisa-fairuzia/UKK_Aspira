@@ -114,8 +114,27 @@
             }
         }
 
-        /* Responsive Fixes */
         @media (max-width: 768px) {
+
+            .faq-grid {
+                grid-template-columns: 1fr !important;
+            }
+
+            .faq-card {
+                padding: 1rem !important;
+            }
+
+            .faq-q {
+                flex-wrap: wrap !important;
+                gap: 0.5rem !important;
+            }
+
+            .faq-bullet {
+                width: 32px !important;
+                height: 32px !important;
+                font-size: 0.75rem !important;
+            }
+
             .px-10 {
                 padding-left: 1.5rem !important;
                 padding-right: 1.5rem !important;

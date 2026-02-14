@@ -94,6 +94,61 @@ class PengaduanController extends Controller
         return view('siswa.pengaduan.riwayat', compact('pengaduan', 'totalPengaduan'));
     }
 
+    /**
+     * Tampilkan daftar pengaduan dari siswa lain (mirip tampilan admin tapi read-only)
+     * - Query efisien: eager load + where nis != current
+     * - Dukung pencarian singkat dan filter status
+     */
+    public function others(Request $request)
+    {
+        $nis = session('nis');
+
+        $query = InputAspirasi::with(['siswa.kelas', 'kategori', 'aspirasi'])
+            ->where('input_aspirasi.nis', '!=', $nis)
+            ->leftJoin('aspirasi', 'input_aspirasi.id_pelaporan', '=', 'aspirasi.id_input_aspirasi')
+            ->select('input_aspirasi.*');
+
+        if ($q = $request->query('q')) {
+            $query->where(function ($qq) use ($q) {
+                $qq->where('input_aspirasi.lokasi', 'like', "%{$q}%")
+                    ->orWhere('input_aspirasi.ket', 'like', "%{$q}%")
+                    ->orWhereHas('siswa', function ($s) use ($q) {
+                        $s->where('nama', 'like', "%{$q}%");
+                    });
+            });
+        }
+
+        if ($status = $request->query('status')) {
+            if ($status === 'Menunggu') {
+                $query->where(function ($q2) {
+                    $q2->whereDoesntHave('aspirasi')
+                        ->orWhereHas('aspirasi', function ($qa) {
+                            $qa->where('status', 'Menunggu');
+                        });
+                });
+            } else {
+                $query->whereHas('aspirasi', function ($qa) use ($status) {
+                    $qa->where('status', $status);
+                });
+            }
+        }
+
+        $pengaduan = $query
+            ->orderByRaw("CASE
+                WHEN aspirasi.status = 'Proses' THEN 2
+                WHEN aspirasi.status = 'Selesai' THEN 3
+                ELSE 1
+            END")
+            ->latest('input_aspirasi.created_at')
+            ->paginate(10);
+
+        $filter = [
+            'q' => $request->query('q'),
+            'status' => $request->query('status')
+        ];
+
+        return view('siswa.pengaduan.lainnya', compact('pengaduan', 'filter'));
+    }
     public function show(InputAspirasi $aspirasi)
     {
 
@@ -106,6 +161,14 @@ class PengaduanController extends Controller
         $kategoris = Kategori::all();
 
         return view('siswa.pengaduan.show', compact('aspirasi', 'aspirasiData', 'kategoris'));
+    }
+
+    public function showPublic(InputAspirasi $aspirasi)
+    {
+        $aspirasi->load(['siswa', 'kategori']);
+        $aspirasiData = Aspirasi::where('id_input_aspirasi', $aspirasi->id_pelaporan)->first();
+
+        return view('siswa.pengaduan.show_public', compact('aspirasi', 'aspirasiData'));
     }
 
     public function update(Request $request, InputAspirasi $aspirasi)

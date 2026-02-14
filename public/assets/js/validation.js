@@ -78,6 +78,11 @@
         return;
       }
 
+      if (input.dataset.initialValue !== undefined && v === input.dataset.initialValue) {
+        if (lastStateIsError) setErrorState(false);
+        return;
+      }
+
       const requestId = ++pendingRequestId;
 
       try {
@@ -125,13 +130,20 @@
     const modal = input.closest('.modal');
     if (modal) {
       modal.addEventListener('shown.bs.modal', () => {
+        input.dataset.initialValue = (input.value || '').trim();
+
         if (lastStateIsError) {
           setFormHasError(form, -1);
           lastStateIsError = false;
         }
         clearFieldError(input);
+
         if (input.value && input.value.trim() !== '') {
-          doCheck(input.value);
+          if (input.dataset.initialValue && input.value.trim() === input.dataset.initialValue) {
+            setErrorState(false);
+          } else {
+            doCheck(input.value);
+          }
         }
       });
 
@@ -141,6 +153,23 @@
           lastStateIsError = false;
         }
         clearFieldError(input);
+        if (input.dataset.initialValue !== undefined) {
+          input.value = input.dataset.initialValue;
+          delete input.dataset.initialValue;
+        }
+      });
+
+      modal.querySelectorAll('[data-bs-dismiss="modal"], .btn-cancel').forEach(btn => {
+        btn.addEventListener('click', () => {
+          if (lastStateIsError) {
+            setFormHasError(form, -1);
+            lastStateIsError = false;
+          }
+          clearFieldError(input);
+          if (input.dataset.initialValue !== undefined) {
+            input.value = input.dataset.initialValue;
+          }
+        });
       });
     }
 

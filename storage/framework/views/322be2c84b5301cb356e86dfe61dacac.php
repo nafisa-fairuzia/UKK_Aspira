@@ -58,10 +58,11 @@
                                 <tr>
                                     <th class="text-center text-dark" style="width: 4%">No</th>
                                     <th class="text-dark" style="width: 16%">NIS</th>
-                                    <th class="text-dark" style="width: 30%">Nama Lengkap</th>
-                                    <th class="text-dark" style="width: 20%">Kelas</th>
-                                    <th class="text-dark" style="width: 15%">Username</th>
-                                    <th class="text-end pe-4 text-dark" style="width: 15%">Aksi</th>
+                                    <th class="text-dark" style="width: 25%">Nama Lengkap</th>
+                                    <th class="text-dark" style="width: 18%">Kelas</th>
+                                    <th class="text-dark" style="width: 13%">Username</th>
+                                    <th class="text-dark" style="width: 15%">Tanggal Terdaftar</th>
+                                    <th class="text-end pe-4 text-dark" style="width: 12%">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -102,6 +103,12 @@
                                     <td>
                                         <span class="text-dark small"><?php echo e($item->username ?? '-'); ?></span>
                                     </td>
+                                    <td>
+                                        <small class="text-muted">
+                                            <?php echo e($item->created_at ? $item->created_at->format('d/m/Y') : '-'); ?>
+
+                                        </small>
+                                    </td>
                                     <td class="text-end pe-3">
                                         <div class="d-flex gap-1 justify-content-end">
                                             <button type="button"
@@ -127,14 +134,14 @@
                                 <?php endforeach; $__env->popLoop(); $loop = $__env->getLastLoop(); if ($__empty_1): ?>
                                 <?php if (isset($component)) { $__componentOriginal074a021b9d42f490272b5eefda63257c = $component; } ?>
 <?php if (isset($attributes)) { $__attributesOriginal074a021b9d42f490272b5eefda63257c = $attributes; } ?>
-<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.empty-state','data' => ['colspan' => '5','icon' => 'ti-users','message' => 'Tidak ada data siswa']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
+<?php $component = Illuminate\View\AnonymousComponent::resolve(['view' => 'components.empty-state','data' => ['colspan' => '6','icon' => 'ti-users','message' => 'Tidak ada data siswa']] + (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag ? $attributes->all() : [])); ?>
 <?php $component->withName('empty-state'); ?>
 <?php if ($component->shouldRender()): ?>
 <?php $__env->startComponent($component->resolveView(), $component->data()); ?>
 <?php if (isset($attributes) && $attributes instanceof Illuminate\View\ComponentAttributeBag): ?>
 <?php $attributes = $attributes->except(\Illuminate\View\AnonymousComponent::ignoredParameterNames()); ?>
 <?php endif; ?>
-<?php $component->withAttributes(['colspan' => '5','icon' => 'ti-users','message' => 'Tidak ada data siswa']); ?>
+<?php $component->withAttributes(['colspan' => '6','icon' => 'ti-users','message' => 'Tidak ada data siswa']); ?>
 <?php echo $__env->renderComponent(); ?>
 <?php endif; ?>
 <?php if (isset($__attributesOriginal074a021b9d42f490272b5eefda63257c)): ?>

@@ -39,10 +39,11 @@
                                 <tr>
                                     <th class="text-center text-dark" style="width: 4%">No</th>
                                     <th class="text-dark" style="width: 16%">NIS</th>
-                                    <th class="text-dark" style="width: 30%">Nama Lengkap</th>
-                                    <th class="text-dark" style="width: 20%">Kelas</th>
-                                    <th class="text-dark" style="width: 15%">Username</th>
-                                    <th class="text-end pe-4 text-dark" style="width: 15%">Aksi</th>
+                                    <th class="text-dark" style="width: 25%">Nama Lengkap</th>
+                                    <th class="text-dark" style="width: 18%">Kelas</th>
+                                    <th class="text-dark" style="width: 13%">Username</th>
+                                    <th class="text-dark" style="width: 15%">Tanggal Terdaftar</th>
+                                    <th class="text-end pe-4 text-dark" style="width: 12%">Aksi</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -63,6 +64,11 @@
                                     </td>
                                     <td>
                                         <span class="text-dark small">{{ $item->username ?? '-' }}</span>
+                                    </td>
+                                    <td>
+                                        <small class="text-muted">
+                                            {{ $item->created_at ? $item->created_at->format('d/m/Y') : '-' }}
+                                        </small>
                                     </td>
                                     <td class="text-end pe-3">
                                         <div class="d-flex gap-1 justify-content-end">
@@ -87,7 +93,7 @@
                                     </td>
                                 </tr>
                                 @empty
-                                <x-empty-state colspan="5" icon="ti-users" message="Tidak ada data siswa" />
+                                <x-empty-state colspan="6" icon="ti-users" message="Tidak ada data siswa" />
                                 @endforelse
                             </tbody>
                         </table>
